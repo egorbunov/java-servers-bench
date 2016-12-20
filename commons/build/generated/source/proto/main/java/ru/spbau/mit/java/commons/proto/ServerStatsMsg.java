@@ -15,8 +15,8 @@ public  final class ServerStatsMsg extends
     super(builder);
   }
   private ServerStatsMsg() {
-    avRequestMs_ = 0D;
-    avSortingMs_ = 0D;
+    avRequestNs_ = 0D;
+    avSortingNs_ = 0D;
   }
 
   @java.lang.Override
@@ -46,12 +46,12 @@ public  final class ServerStatsMsg extends
           }
           case 9: {
 
-            avRequestMs_ = input.readDouble();
+            avRequestNs_ = input.readDouble();
             break;
           }
           case 17: {
 
-            avSortingMs_ = input.readDouble();
+            avSortingNs_ = input.readDouble();
             break;
           }
         }
@@ -77,22 +77,22 @@ public  final class ServerStatsMsg extends
             ru.spbau.mit.java.commons.proto.ServerStatsMsg.class, ru.spbau.mit.java.commons.proto.ServerStatsMsg.Builder.class);
   }
 
-  public static final int AVREQUESTMS_FIELD_NUMBER = 1;
-  private double avRequestMs_;
+  public static final int AVREQUESTNS_FIELD_NUMBER = 1;
+  private double avRequestNs_;
   /**
-   * <code>optional double avRequestMs = 1;</code>
+   * <code>optional double avRequestNs = 1;</code>
    */
-  public double getAvRequestMs() {
-    return avRequestMs_;
+  public double getAvRequestNs() {
+    return avRequestNs_;
   }
 
-  public static final int AVSORTINGMS_FIELD_NUMBER = 2;
-  private double avSortingMs_;
+  public static final int AVSORTINGNS_FIELD_NUMBER = 2;
+  private double avSortingNs_;
   /**
-   * <code>optional double avSortingMs = 2;</code>
+   * <code>optional double avSortingNs = 2;</code>
    */
-  public double getAvSortingMs() {
-    return avSortingMs_;
+  public double getAvSortingNs() {
+    return avSortingNs_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -107,11 +107,11 @@ public  final class ServerStatsMsg extends
 
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (avRequestMs_ != 0D) {
-      output.writeDouble(1, avRequestMs_);
+    if (avRequestNs_ != 0D) {
+      output.writeDouble(1, avRequestNs_);
     }
-    if (avSortingMs_ != 0D) {
-      output.writeDouble(2, avSortingMs_);
+    if (avSortingNs_ != 0D) {
+      output.writeDouble(2, avSortingNs_);
     }
   }
 
@@ -120,13 +120,13 @@ public  final class ServerStatsMsg extends
     if (size != -1) return size;
 
     size = 0;
-    if (avRequestMs_ != 0D) {
+    if (avRequestNs_ != 0D) {
       size += com.google.protobuf.CodedOutputStream
-        .computeDoubleSize(1, avRequestMs_);
+        .computeDoubleSize(1, avRequestNs_);
     }
-    if (avSortingMs_ != 0D) {
+    if (avSortingNs_ != 0D) {
       size += com.google.protobuf.CodedOutputStream
-        .computeDoubleSize(2, avSortingMs_);
+        .computeDoubleSize(2, avSortingNs_);
     }
     memoizedSize = size;
     return size;
@@ -145,13 +145,13 @@ public  final class ServerStatsMsg extends
 
     boolean result = true;
     result = result && (
-        java.lang.Double.doubleToLongBits(getAvRequestMs())
+        java.lang.Double.doubleToLongBits(getAvRequestNs())
         == java.lang.Double.doubleToLongBits(
-            other.getAvRequestMs()));
+            other.getAvRequestNs()));
     result = result && (
-        java.lang.Double.doubleToLongBits(getAvSortingMs())
+        java.lang.Double.doubleToLongBits(getAvSortingNs())
         == java.lang.Double.doubleToLongBits(
-            other.getAvSortingMs()));
+            other.getAvSortingNs()));
     return result;
   }
 
@@ -162,12 +162,12 @@ public  final class ServerStatsMsg extends
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptorForType().hashCode();
-    hash = (37 * hash) + AVREQUESTMS_FIELD_NUMBER;
+    hash = (37 * hash) + AVREQUESTNS_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-        java.lang.Double.doubleToLongBits(getAvRequestMs()));
-    hash = (37 * hash) + AVSORTINGMS_FIELD_NUMBER;
+        java.lang.Double.doubleToLongBits(getAvRequestNs()));
+    hash = (37 * hash) + AVSORTINGNS_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-        java.lang.Double.doubleToLongBits(getAvSortingMs()));
+        java.lang.Double.doubleToLongBits(getAvSortingNs()));
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -286,9 +286,9 @@ public  final class ServerStatsMsg extends
     }
     public Builder clear() {
       super.clear();
-      avRequestMs_ = 0D;
+      avRequestNs_ = 0D;
 
-      avSortingMs_ = 0D;
+      avSortingNs_ = 0D;
 
       return this;
     }
@@ -312,8 +312,8 @@ public  final class ServerStatsMsg extends
 
     public ru.spbau.mit.java.commons.proto.ServerStatsMsg buildPartial() {
       ru.spbau.mit.java.commons.proto.ServerStatsMsg result = new ru.spbau.mit.java.commons.proto.ServerStatsMsg(this);
-      result.avRequestMs_ = avRequestMs_;
-      result.avSortingMs_ = avSortingMs_;
+      result.avRequestNs_ = avRequestNs_;
+      result.avSortingNs_ = avSortingNs_;
       onBuilt();
       return result;
     }
@@ -355,11 +355,11 @@ public  final class ServerStatsMsg extends
 
     public Builder mergeFrom(ru.spbau.mit.java.commons.proto.ServerStatsMsg other) {
       if (other == ru.spbau.mit.java.commons.proto.ServerStatsMsg.getDefaultInstance()) return this;
-      if (other.getAvRequestMs() != 0D) {
-        setAvRequestMs(other.getAvRequestMs());
+      if (other.getAvRequestNs() != 0D) {
+        setAvRequestNs(other.getAvRequestNs());
       }
-      if (other.getAvSortingMs() != 0D) {
-        setAvSortingMs(other.getAvSortingMs());
+      if (other.getAvSortingNs() != 0D) {
+        setAvSortingNs(other.getAvSortingNs());
       }
       onChanged();
       return this;
@@ -387,54 +387,54 @@ public  final class ServerStatsMsg extends
       return this;
     }
 
-    private double avRequestMs_ ;
+    private double avRequestNs_ ;
     /**
-     * <code>optional double avRequestMs = 1;</code>
+     * <code>optional double avRequestNs = 1;</code>
      */
-    public double getAvRequestMs() {
-      return avRequestMs_;
+    public double getAvRequestNs() {
+      return avRequestNs_;
     }
     /**
-     * <code>optional double avRequestMs = 1;</code>
+     * <code>optional double avRequestNs = 1;</code>
      */
-    public Builder setAvRequestMs(double value) {
+    public Builder setAvRequestNs(double value) {
       
-      avRequestMs_ = value;
+      avRequestNs_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>optional double avRequestMs = 1;</code>
+     * <code>optional double avRequestNs = 1;</code>
      */
-    public Builder clearAvRequestMs() {
+    public Builder clearAvRequestNs() {
       
-      avRequestMs_ = 0D;
+      avRequestNs_ = 0D;
       onChanged();
       return this;
     }
 
-    private double avSortingMs_ ;
+    private double avSortingNs_ ;
     /**
-     * <code>optional double avSortingMs = 2;</code>
+     * <code>optional double avSortingNs = 2;</code>
      */
-    public double getAvSortingMs() {
-      return avSortingMs_;
+    public double getAvSortingNs() {
+      return avSortingNs_;
     }
     /**
-     * <code>optional double avSortingMs = 2;</code>
+     * <code>optional double avSortingNs = 2;</code>
      */
-    public Builder setAvSortingMs(double value) {
+    public Builder setAvSortingNs(double value) {
       
-      avSortingMs_ = value;
+      avSortingNs_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>optional double avSortingMs = 2;</code>
+     * <code>optional double avSortingNs = 2;</code>
      */
-    public Builder clearAvSortingMs() {
+    public Builder clearAvSortingNs() {
       
-      avSortingMs_ = 0D;
+      avSortingNs_ = 0D;
       onChanged();
       return this;
     }

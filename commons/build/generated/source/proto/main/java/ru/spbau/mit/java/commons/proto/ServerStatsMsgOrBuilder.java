@@ -8,12 +8,12 @@ public interface ServerStatsMsgOrBuilder extends
     com.google.protobuf.MessageOrBuilder {
 
   /**
-   * <code>optional double avRequestMs = 1;</code>
+   * <code>optional double avRequestNs = 1;</code>
    */
-  double getAvRequestMs();
+  double getAvRequestNs();
 
   /**
-   * <code>optional double avSortingMs = 2;</code>
+   * <code>optional double avSortingNs = 2;</code>
    */
-  double getAvSortingMs();
+  double getAvSortingNs();
 }

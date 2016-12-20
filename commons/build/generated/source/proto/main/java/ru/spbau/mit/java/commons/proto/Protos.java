@@ -43,7 +43,7 @@ public final class Protos {
       "tsMsg\022\022\n\nserverPort\030\001 \001(\005\022\032\n\022serverArchi" +
       "tecture\030\002 \001(\005\022\024\n\014clientNumber\030\003 \001(\005\022\026\n\016r" +
       "equestsNumber\030\004 \001(\005\":\n\016ServerStatsMsg\022\023\n" +
-      "\013avRequestMs\030\001 \001(\001\022\023\n\013avSortingMs\030\002 \001(\001B" +
+      "\013avRequestNs\030\001 \001(\001\022\023\n\013avSortingNs\030\002 \001(\001B" +
       "+\n\037ru.spbau.mit.java.commons.protoB\006Prot" +
       "osP\001b\006proto3"
     };
@@ -76,7 +76,7 @@ public final class Protos {
     internal_static_ServerStatsMsg_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_ServerStatsMsg_descriptor,
-        new java.lang.String[] { "AvRequestMs", "AvSortingMs", });
+        new java.lang.String[] { "AvRequestNs", "AvSortingNs", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
