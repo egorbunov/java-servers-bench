@@ -35,7 +35,7 @@ public class TcpThreaded {
     @Test
     public void test() throws IOException, InterruptedException {
         server.start();
-        clientRunner.run();
+        System.out.println("Av. client time: " + clientRunner.run());
         ServerStats bench = server.bench();
         System.out.println(bench);
         server.stop();

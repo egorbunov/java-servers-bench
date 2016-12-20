@@ -32,7 +32,6 @@ public class BenchClient {
                 .build();
 
 
-
         int benchServerPort = 6666;
         String benchServerHost = "localhost";
 
@@ -62,6 +61,7 @@ public class BenchClient {
 
         int ansLen = in.readInt();
         byte[] statsBs = new byte[ansLen];
+        in.read(statsBs);
         ServerStatsMsg serverStatsMsg = ServerStatsMsg.parseFrom(statsBs);
 
         System.out.println(serverStatsMsg.toString());

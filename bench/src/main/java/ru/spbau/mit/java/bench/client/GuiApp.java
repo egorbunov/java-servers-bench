@@ -33,24 +33,10 @@ public class GuiApp extends Application {
     private ComboBox<Control> whatToChangeCB;
     private Slider changeFrom;
     private Slider changeTo;
+    private Slider changeStep;
 
-    private enum Control {
-        CLIENT_NUM("Clients number"),
-        REQUSET_NUM("Request number"),
-        DELAY("Response-request gap"),
-        ARRAY_LEN("Array to sort length");
-
-        private final String name;
-
-        Control(String s) {
-            name = s;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
+    private TextField serverRunnerHost;
+    private TextField serverRunnerPort;
 
     private void addSliderLabelListener(Slider sl, Label lb) {
         sl.valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -107,12 +93,16 @@ public class GuiApp extends Application {
         whatToChangeCB = new ComboBox<>(FXCollections.observableList(Arrays.asList(Control.values())));
         changeFrom = new Slider(0, 0, 0);
         changeTo = new Slider(0, 0, 0);
+        changeStep = new Slider(1, 10000, 10);
         changeFrom.setDisable(true);
         changeTo.setDisable(true);
+        changeStep.setDisable(true);
         Label changeToLbl = new Label(Integer.toString((int) changeTo.getValue()));
         addSliderLabelListener(changeTo, changeToLbl);
         Label changeFromLbl = new Label(Integer.toString((int) changeFrom.getValue()));
         addSliderLabelListener(changeFrom, changeFromLbl);
+        Label changeStepLbl = new Label(Integer.toString((int) changeStep.getValue()));
+        addSliderLabelListener(changeStep, changeFromLbl);
 
         changeTo.setBlockIncrement(1);
         changeFrom.setBlockIncrement(1);
@@ -130,6 +120,7 @@ public class GuiApp extends Application {
         whatToChangeCB.valueProperty().addListener((observable, oldValue, newValue) -> {
             changeFrom.setDisable(false);
             changeTo.setDisable(false);
+            changeStep.setDisable(false);
             arrayElNumS.setDisable(false);
             clientNumberS.setDisable(false);
             requestNumberS.setDisable(false);
@@ -190,23 +181,23 @@ public class GuiApp extends Application {
         controlsGrid.setPadding(new Insets(15, 15, 15, 15));
         controlsGrid.add(new Label("Server architecture:"), 0, 0);
         controlsGrid.add(archTypesComboBox, 1, 0);
-        controlsGrid.add(new Label(Control.CLIENT_NUM.name), 0, 1);
+        controlsGrid.add(new Label(Control.CLIENT_NUM.toString()), 0, 1);
 
         controlsGrid.add(clientNumberS, 1, 1);
         GridPane.setMargin(clientNumberLbl, new Insets(0, 0, 0, 15));
         controlsGrid.add(clientNumberLbl, 2, 1);
 
-        controlsGrid.add(new Label(Control.REQUSET_NUM.name), 0, 2);
+        controlsGrid.add(new Label(Control.REQUSET_NUM.toString()), 0, 2);
         controlsGrid.add(requestNumberS, 1, 2);
         GridPane.setMargin(reqNumLbl, new Insets(0, 0, 0, 15));
         controlsGrid.add(reqNumLbl, 2, 2);
 
-        controlsGrid.add(new Label(Control.DELAY.name), 0, 3);
+        controlsGrid.add(new Label(Control.DELAY.toString()), 0, 3);
         controlsGrid.add(delaySlider, 1, 3);
         GridPane.setMargin(delLbl, new Insets(0, 0, 0, 15));
         controlsGrid.add(delLbl, 2, 3);
 
-        controlsGrid.add(new Label(Control.ARRAY_LEN.name), 0, 4);
+        controlsGrid.add(new Label(Control.ARRAY_LEN.toString()), 0, 4);
         controlsGrid.add(arrayElNumS, 1, 4);
         GridPane.setMargin(arrElNumLbl, new Insets(0, 0, 0, 15));
         controlsGrid.add(arrElNumLbl, 2, 4);
@@ -229,8 +220,32 @@ public class GuiApp extends Application {
         GridPane.setMargin(changeToLbl, new Insets(0, 0, 0, 15));
         controlsGrid.add(changeToLbl, 2, 8);
 
+        controlsGrid.add(changeStep, 1, 9);
+        GridPane.setMargin(changeStepLbl, new Insets(0, 0, 0, 15));
+        controlsGrid.add(changeStepLbl, 2, 9);
 
-        GridPane.setConstraints(benchBtn, 0, 10);
+        serverRunnerHost = new TextField("localhost");
+        serverRunnerPort = new TextField("6666");
+
+        final Separator sep1 = new Separator();
+        sep1.setValignment(VPos.CENTER);
+        GridPane.setConstraints(sep1, 0, 10);
+        GridPane.setColumnSpan(sep1, 2);
+        controlsGrid.getChildren().add(sep1);
+
+        controlsGrid.add(new Label("Server runner hostname: "), 0, 11);
+        controlsGrid.add(serverRunnerHost, 1, 11);
+
+        controlsGrid.add(new Label("Server runner port: "), 0, 12);
+        controlsGrid.add(serverRunnerPort, 1, 12);
+
+        final Separator sep2 = new Separator();
+        sep2.setValignment(VPos.CENTER);
+        GridPane.setConstraints(sep2, 0, 13);
+        GridPane.setColumnSpan(sep2, 2);
+        controlsGrid.getChildren().add(sep2);
+
+        GridPane.setConstraints(benchBtn, 0, 14);
         GridPane.setColumnSpan(benchBtn, 2);
         controlsGrid.getChildren().add(benchBtn);
 
@@ -244,7 +259,7 @@ public class GuiApp extends Application {
         TabPane root = new TabPane(controlsTab, requestAvTimeTab, sortAvTimeTab);
         requestAvTimeTab.setDisable(true);
         sortAvTimeTab.setDisable(true);
-        primaryStage.setScene(new Scene(root, 600, 500));
+        primaryStage.setScene(new Scene(root, 600, 600));
         primaryStage.show();
     }
 }

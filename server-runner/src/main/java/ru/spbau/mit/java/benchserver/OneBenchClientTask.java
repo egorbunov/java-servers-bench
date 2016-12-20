@@ -67,9 +67,13 @@ public class OneBenchClientTask implements Runnable {
                     out.writeInt(bsStats.length);
                     out.write(bsStats);
                 }
+
+                serverToBench.stop();
             }
         } catch (IOException e) {
             log.error("Error: " + e.getMessage());
+        } catch (InterruptedException e) {
+            log.error("Error waiting for bench server to stop: " + e.getMessage());
         }
     }
 }
