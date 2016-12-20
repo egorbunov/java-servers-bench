@@ -38,8 +38,13 @@ public class OneBenchClientTask implements Runnable {
                 log.debug("Gor bench options: " + opts.toString());
 
                 BenchServer serverToBench = null;
-                switch (opts.getServerArchitecture()) {
-                    case ServArchitecture.TCP_THREAD_PER_CLIENT: {
+                ServArchitecture arch = ServArchitecture.fromCode(opts.getServerArchitecture());
+                if (arch == null) {
+                    log.error("Not supported server arch");
+                    break;
+                }
+                switch (arch) {
+                    case TCP_THREAD_PER_CLIENT: {
                         serverToBench = new ThreadedTcpServer(
                                 opts.getServerPort(),
                                 new BenchOpts(opts.getClientNumber(), opts.getRequestsNumber())
@@ -48,6 +53,7 @@ public class OneBenchClientTask implements Runnable {
                     }
                     default: {
                         log.info("Not supported " + opts.getServerArchitecture());
+                        break;
                     }
                 }
 

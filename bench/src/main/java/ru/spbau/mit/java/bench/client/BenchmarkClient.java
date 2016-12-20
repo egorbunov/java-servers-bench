@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 
 @Slf4j
 public class BenchmarkClient implements Callable<List<FinalStat>> {
-    private final int servArchitecture;
+    private final ServArchitecture servArchitecture;
     private final String benchHost;
     private final int benchPort;
     private final RunnerOpts opts;
@@ -34,7 +34,7 @@ public class BenchmarkClient implements Callable<List<FinalStat>> {
     private Consumer<Integer> onProgressChange;
     private Consumer<String> errorCallback;
 
-    public BenchmarkClient(int servArchitecture,
+    public BenchmarkClient(ServArchitecture servArchitecture,
                            String benchHost,
                            int benchPort,
                            RunnerOpts opts,
@@ -66,8 +66,8 @@ public class BenchmarkClient implements Callable<List<FinalStat>> {
                 return new RunnerOpts(opts.getClientNumber(), opts.getArrayLen(), val, opts.getRequestNumber());
             case ARRAY_LEN:
                 return new RunnerOpts(opts.getClientNumber(), val, opts.getDeltaMs(), opts.getRequestNumber());
-            break;
         }
+        return null;
     }
 
 
@@ -92,7 +92,7 @@ public class BenchmarkClient implements Callable<List<FinalStat>> {
                     .setClientNumber(runnerOpts.getClientNumber())
                     .setServerPort(benchPort + 1)
                     .setRequestsNumber(runnerOpts.getRequestNumber())
-                    .setServerArchitecture(servArchitecture)
+                    .setServerArchitecture(servArchitecture.getCode())
                     .build();
 
             byte[] optsBytes = optsMsg.toByteArray();
