@@ -6,14 +6,15 @@ import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RequestProcess {
     public static byte[] process(byte[] msg) throws InvalidProtocolBufferException {
         IntArrayMsg intArrayMsg = IntArrayMsg.parseFrom(msg);
         List<Integer> numbers = intArrayMsg.getNumbersList();
-        Collections.sort(numbers);
+        List<Integer> sorted = numbers.stream().sorted().collect(Collectors.toList());
         IntArrayMsg.Builder builder = IntArrayMsg.newBuilder();
-        IntArrayMsg answer = builder.addAllNumbers(numbers).build();
+        IntArrayMsg answer = builder.addAllNumbers(sorted).build();
         return answer.toByteArray();
     }
 }

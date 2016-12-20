@@ -56,6 +56,7 @@ public class TcpClient implements BenchClient {
 
     @Override
     public void disconnect() throws IOException {
+        out.writeInt(-1);
         in.close();
         out.close();
         connection.close();

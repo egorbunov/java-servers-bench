@@ -29,7 +29,7 @@ public class OneBenchClientTask implements Runnable {
         try (Socket clientSocket = sock) {
             DataInputStream in = new DataInputStream(clientSocket.getInputStream());
             DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-            while (Thread.currentThread().isInterrupted()) {
+            while (!Thread.currentThread().isInterrupted()) {
                 int msgLen = in.readInt();
                 byte[] msg = new byte[msgLen];
                 in.readFully(msg);
@@ -54,10 +54,14 @@ public class OneBenchClientTask implements Runnable {
                 if (serverToBench == null) {
                     out.writeInt(0);
                 } else {
+                    serverToBench.start();
+
+                    out.writeBoolean(true); // client can start benching clients
+
                     ServerStats stats = serverToBench.bench();
                     ServerStatsMsg statsMsg = ServerStatsMsg.newBuilder()
-                            .setAvRequestMs(stats.getAvgRequestProcMs())
-                            .setAvSortingMs(stats.getAvgSortingMs())
+                            .setAvRequestNs(stats.getAvgRequestProcNs())
+                            .setAvSortingNs(stats.getAvgSortingNs())
                             .build();
                     byte[] bsStats = statsMsg.toByteArray();
                     out.writeInt(bsStats.length);

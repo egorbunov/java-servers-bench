@@ -17,6 +17,6 @@ message BenchOptsMsg {
 }
 
 message ServerStatsMsg {
-    double avRequestMs = 1;
-    double avSortingMs = 2;
+    double avRequestNs = 1;
+    double avSortingNs = 2;
 }

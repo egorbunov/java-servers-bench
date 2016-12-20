@@ -1,6 +1,6 @@
 package ru.spbau.mit.java.client.runner;
 
-import ru.spbau.mit.java.commons.proto.IntArray;
+import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ArraySupplier implements Supplier<IntArray> {
+public class ArraySupplier implements Supplier<IntArrayMsg> {
     private final int size;
 
     public ArraySupplier(int size) {
@@ -16,9 +16,9 @@ public class ArraySupplier implements Supplier<IntArray> {
     }
 
     @Override
-    public IntArray get() {
+    public IntArrayMsg get() {
         Random random = ThreadLocalRandom.current();
-        IntArray.Builder builder = IntArray.newBuilder();
+        IntArrayMsg.Builder builder = IntArrayMsg.newBuilder();
         IntStream.generate(random::nextInt).limit(size).forEach(builder::addNumbers);
         return builder.build();
     }

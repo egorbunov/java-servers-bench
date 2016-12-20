@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import ru.spbau.mit.java.client.BenchClient;
 import ru.spbau.mit.java.client.ClientCreator;
 import ru.spbau.mit.java.commons.StoppableRunnable;
-import ru.spbau.mit.java.commons.proto.IntArray;
 
 import java.io.IOError;
 import java.io.IOException;
@@ -23,7 +22,7 @@ import java.util.function.Supplier;
  */
 
 @Slf4j
-public class ClientRunner {
+public class ClientRunner implements Runnable {
     private final RunnerOpts opts;
     private final ClientCreator clientCreator;
     private final ArraySupplier arraySupplier;
@@ -41,11 +40,15 @@ public class ClientRunner {
         this.clientsExecutor = Executors.newCachedThreadPool();
     }
 
-    public void start() {
+    public void run() {
+        log.debug("Running clients, opts: " + opts);
+
         List<Future<?>> futures = new ArrayList<>();
         for (int i = 0; i < opts.getClientNumber(); ++i) {
             futures.add(clientsExecutor.submit(new ClientTask()));
         }
+
+        log.debug("All " + opts.getClientNumber() + " clients submitted, now waiting...");
 
         for (Future<?> f : futures) {
             try {
@@ -56,6 +59,8 @@ public class ClientRunner {
                 log.error("Client execution excpetion: " + e.getCause().getMessage());
             }
         }
+
+        log.debug("Finish!");
     }
 
     private class ClientTask extends StoppableRunnable {

@@ -9,7 +9,7 @@ import java.io.IOException;
  */
 public interface BenchServer extends AutoCloseable {
     /**
-     * performs benchmark (blocking call)
+     * performs benchmark (blocking call) (call start before it)
      */
     ServerStats bench();
 
