@@ -1,0 +1,8 @@
+rootProject.name = 'serv-type-bench'
+include 'server'
+include 'client'
+include 'commons'
+include 'server-runner'
+include 'bench'
+include 'bench'
+

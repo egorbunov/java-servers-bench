@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_package = "ru.spbau.mit.java.commons.proto";
+option java_outer_classname = "Protos";
+option java_multiple_files = true;
+
+
+message IntArrayMsg {
+    repeated int32 numbers = 1 [packed=true];
+}
+
+message BenchOptsMsg {
+    int32 serverPort = 1;
+    int32 serverArchitecture = 2;
+    int32 clientNumber = 3;
+    int32 requestsNumber = 4;
+}
+
+message ServerStatsMsg {
+    double avRequestMs = 1;
+    double avSortingMs = 2;
+}

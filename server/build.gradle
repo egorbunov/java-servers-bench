@@ -1,0 +1,27 @@
+group 'ru.spbau.mit.java'
+version '0.1'
+
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": "ru.spbau.mit.java.Main"
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+dependencies {
+    compile project(':commons')
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compileOnly "org.projectlombok:lombok:1.16.12"
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.1'
+    compile group: 'org.jetbrains', name: 'annotations', version: '13.0'
+    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+}
