@@ -29,6 +29,7 @@ public class BenchResultTableView implements BenchmarkControllerListener {
     private final TableView<Row> table = new TableView<>();
     private final VBox tableBox;
     private BenchmarkSettings curSettings;
+    private final Label tableLabel;
 
     @Data
     public static class Row {
@@ -43,13 +44,13 @@ public class BenchResultTableView implements BenchmarkControllerListener {
     }
 
     public BenchResultTableView(Stage parent) {
-        final Label label = new Label("Benchmark data");
-        label.setFont(new Font("Arial", 20));
+        tableLabel = new Label("Benchmark data");
+        tableLabel.setFont(new Font("Arial", 15));
         table.setEditable(false);
         tableBox = new VBox();
         tableBox.setSpacing(5);
         tableBox.setPadding(new Insets(10, 10, 0, 10));
-        tableBox.getChildren().addAll(label, table);
+        tableBox.getChildren().addAll(tableLabel, table);
 
         // csv saving
         final FileChooser fileChooser = new FileChooser();
@@ -98,6 +99,9 @@ public class BenchResultTableView implements BenchmarkControllerListener {
     @Override
     public void onBenchmarkStarted(BenchmarkSettings settings) {
         this.curSettings = settings;
+        tableLabel.setText("Benchmark data. "
+                + settings.getServArchitecture() + "; "
+                + settings.getRunnerOpts());
     }
 
     @Override
