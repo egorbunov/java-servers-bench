@@ -2,7 +2,7 @@ package ru.spbau.mit.java.test;
 
 
 import org.junit.Test;
-import ru.spbau.mit.java.client.TcpClient;
+import ru.spbau.mit.java.client.TcpConnectionPreservingClient;
 import ru.spbau.mit.java.client.runner.ClientRunner;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
 import ru.spbau.mit.java.server.BenchOpts;
@@ -27,7 +27,7 @@ public class TcpThreaded {
     ));
 
     private ClientRunner clientRunner = new ClientRunner(runnerOpts,
-            new TcpClient.Creator("localhost", serverPort));
+            new TcpConnectionPreservingClient.Creator("localhost", serverPort));
 
     public TcpThreaded() throws IOException {
     }

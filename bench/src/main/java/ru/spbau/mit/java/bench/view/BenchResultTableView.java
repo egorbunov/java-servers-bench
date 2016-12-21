@@ -57,6 +57,9 @@ public class BenchResultTableView implements BenchmarkControllerListener {
         final MenuItem saveItem = new MenuItem("Save as txt file");
         saveItem.setOnAction(event -> {
             File file = fileChooser.showSaveDialog(parent);
+            if (file == null) {
+                return;
+            }
             List<String> columns =
                     table.getColumns().stream().map(TableColumn::getText).collect(Collectors.toList());
 

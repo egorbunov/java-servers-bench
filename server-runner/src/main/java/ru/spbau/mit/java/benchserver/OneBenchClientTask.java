@@ -7,6 +7,7 @@ import ru.spbau.mit.java.commons.proto.BenchOptsMsg;
 import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
 import ru.spbau.mit.java.server.BenchOpts;
 import ru.spbau.mit.java.server.BenchServer;
+import ru.spbau.mit.java.server.tcp.SingleThreadTcpServer;
 import ru.spbau.mit.java.server.tcp.ThreadPoolTcpServer;
 import ru.spbau.mit.java.server.tcp.ThreadedTcpServer;
 import ru.spbau.mit.java.server.stat.ServerStats;
@@ -50,6 +51,8 @@ public class OneBenchClientTask implements Runnable {
                     bs.start();
                     // client can start benching clients
                     out.writeInt(BenchReqCode.BENCH_READY);
+                    // send port, where the server is running
+                    out.writeInt(serverToBench.getPort());
                     stats = bs.bench();
                 } catch (IOException e) {
                     log.error("Error during bench: " + e.getMessage());
@@ -76,7 +79,6 @@ public class OneBenchClientTask implements Runnable {
     }
 
     private BenchServer createBenchServer(ServArchitecture arch, BenchOptsMsg opts) throws IOException {
-        BenchServer serverToBench = null;
         if (arch == null) {
             log.error("Not supported server arch");
             return null;
@@ -84,13 +86,19 @@ public class OneBenchClientTask implements Runnable {
         switch (arch) {
             case TCP_THREAD_PER_CLIENT: {
                 return new ThreadedTcpServer(
-                        opts.getServerPort(),
+                        0,
                         new BenchOpts(opts.getClientNumber(), opts.getRequestsNumber())
                 );
             }
             case TCP_THREAD_POOL: {
                 return new ThreadPoolTcpServer(
-                        opts.getServerPort(),
+                        0,
+                        new BenchOpts(opts.getClientNumber(), opts.getRequestsNumber())
+                );
+            }
+            case TCP_SINGLE_THREADED: {
+                return new SingleThreadTcpServer(
+                        0,
                         new BenchOpts(opts.getClientNumber(), opts.getRequestsNumber())
                 );
             }
@@ -112,7 +120,6 @@ public class OneBenchClientTask implements Runnable {
 
         byte[] msg = new byte[msgLen];
         in.readFully(msg);
-        BenchOptsMsg opts = BenchOptsMsg.parseFrom(msg);
-        return opts;
+        return BenchOptsMsg.parseFrom(msg);
     }
 }

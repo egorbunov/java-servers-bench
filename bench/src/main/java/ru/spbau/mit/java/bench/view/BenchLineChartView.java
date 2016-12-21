@@ -66,14 +66,13 @@ public class BenchLineChartView implements BenchmarkControllerListener {
                 log.error("Can't save image: " + e.getMessage());
             }
         });
-        final CheckMenuItem preserveLinesItem =
-                new CheckMenuItem("Preserve lines");
-        preserveLinesItem.setOnAction(event -> {
-            this.preserveLines = !this.preserveLines;
+        final MenuItem clearItem = new MenuItem("Clear");
+        clearItem.setOnAction(event -> {
+            lineChart.getData().clear();
         });
         final ContextMenu menu = new ContextMenu(
                 saveItem,
-                preserveLinesItem
+                clearItem
         );
         lineChart.setOnMouseClicked(event -> {
             if (MouseButton.SECONDARY.equals(event.getButton())) {
@@ -89,6 +88,18 @@ public class BenchLineChartView implements BenchmarkControllerListener {
 
     @Override
     public void onBenchmarkStarted(BenchmarkSettings settings) {
+        preserveLines = false;
+        if (bSettings != null) {
+            // preserving lines only in case all settings are the same except architecture
+            if (settings.getFrom() == bSettings.getFrom() &&
+                    settings.getTo() == bSettings.getTo() &&
+                    settings.getStep() == bSettings.getStep() &&
+                    settings.getRunnerOpts().equals(bSettings.getRunnerOpts()) &&
+                    settings.getWhatToChage().equals(bSettings.getWhatToChage())) {
+                preserveLines = true;
+            }
+        }
+
         bSettings = settings;
         xAxis.setLabel(settings.getWhatToChage().toString());
     }

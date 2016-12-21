@@ -1,6 +1,5 @@
 package ru.spbau.mit.java.client;
 
-import org.apache.commons.io.IOUtils;
 import ru.spbau.mit.java.commons.BenchReqCode;
 import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 
@@ -13,7 +12,7 @@ import java.net.Socket;
  * Client, which uses tries to establish tcp connection
  * with server
  */
-public class TcpClient implements BenchClient {
+public class TcpConnectionPreservingClient implements BenchClient {
     private final Socket connection;
     private final DataOutputStream out;
     private final DataInputStream in;
@@ -32,11 +31,11 @@ public class TcpClient implements BenchClient {
 
         @Override
         public BenchClient create() throws IOException {
-            return new TcpClient(host, port);
+            return new TcpConnectionPreservingClient(host, port);
         }
     }
 
-    public TcpClient(String host, int port) throws IOException {
+    public TcpConnectionPreservingClient(String host, int port) throws IOException {
         connection = new Socket(host, port);
         in = new DataInputStream(connection.getInputStream());
         out = new DataOutputStream(connection.getOutputStream());
@@ -48,18 +47,15 @@ public class TcpClient implements BenchClient {
         out.writeInt(msg.length);
         out.write(msg);
         out.flush();
-
         int len = in.readInt();
-        assert len == msg.length;
-        in.readFully(msg);
-        return IntArrayMsg.parseFrom(msg);
+        byte[] answer = new byte[len];
+        in.readFully(answer);
+        return IntArrayMsg.parseFrom(answer);
     }
 
     @Override
     public void disconnect() throws IOException {
         out.writeInt(BenchReqCode.DISCONNECT);
-        in.close();
-        out.close();
         connection.close();
     }
 }

@@ -10,10 +10,9 @@ message IntArrayMsg {
 }
 
 message BenchOptsMsg {
-    int32 serverPort = 1;
-    int32 serverArchitecture = 2;
-    int32 clientNumber = 3;
-    int32 requestsNumber = 4;
+    int32 serverArchitecture = 1;
+    int32 clientNumber = 2;
+    int32 requestsNumber = 3;
 }
 
 message ServerStatsMsg {
