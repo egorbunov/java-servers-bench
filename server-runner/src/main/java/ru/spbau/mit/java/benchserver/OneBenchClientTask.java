@@ -65,6 +65,7 @@ public class OneBenchClientTask implements Runnable {
                     continue;
                 }
                 // ok
+                log.info(stats.toString());
                 ServerStatsMsg statsMsg = ServerStatsMsg.newBuilder()
                         .setAvRequestNs(stats.getAvgRequestProcNs())
                         .setAvSortingNs(stats.getAvgSortingNs())

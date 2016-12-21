@@ -36,7 +36,11 @@ class ClientServingTask implements Callable<List<OneRequestStats>> {
 
             while (!Thread.currentThread().isInterrupted()) {
                 OneRequestTask oneRequestTask = new OneRequestTask(in, out);
-                stats.add(oneRequestTask.call());
+                OneRequestStats stat = oneRequestTask.call();
+                if (stat == null) {
+                    break;
+                }
+                stats.add(stat);
             }
         } catch (InvalidProtocolBufferException e) {
             log.error("Protobuf error: " + e.getMessage());

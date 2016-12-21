@@ -25,7 +25,6 @@ public class SingleThreadTcpServer implements BenchServer {
     private final ServerSocket serverSocket;
 
     public SingleThreadTcpServer(int port, BenchOpts opts) throws IOException {
-        int port1 = port;
         this.opts = opts;
         this.serverSocket = new ServerSocket(port);
     }

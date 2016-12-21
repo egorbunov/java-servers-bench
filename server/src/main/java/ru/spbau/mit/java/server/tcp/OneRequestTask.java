@@ -19,6 +19,10 @@ public class OneRequestTask implements Callable<OneRequestStats> {
         this.out = out;
     }
 
+    /**
+     * @return null in case end of connection!
+     * @throws IOException
+     */
     @Override
     public OneRequestStats call() throws IOException {
         int msgLen = in.readInt();
