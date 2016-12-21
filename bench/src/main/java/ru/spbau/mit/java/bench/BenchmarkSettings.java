@@ -14,4 +14,5 @@ public class BenchmarkSettings {
     private final int from;
     private final int to;
     private final int step;
+    private final int stepRepeatCnt;
 }

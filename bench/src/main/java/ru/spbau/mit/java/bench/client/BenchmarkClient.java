@@ -39,7 +39,8 @@ public class BenchmarkClient {
     private final Consumer<String> errorCallback;
 
     public BenchmarkClient(RunnerOpts runnerOpts,
-                           String benchHost, int benchServerRunnerPort,
+                           String benchHost,
+                           int benchServerRunnerPort,
                            ServArchitecture servArchitecture,
                            Consumer<String> errorCallback) {
 

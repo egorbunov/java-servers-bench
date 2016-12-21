@@ -84,7 +84,7 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
         avClientLifePlotTab.setClosable(false);
         resultsTableTab.setDisable(true);
         resultsTableTab.setClosable(false);
-        primaryStage.setScene(new Scene(root, 650, 600));
+        primaryStage.setScene(new Scene(root, 650, 650));
         primaryStage.show();
     }
 

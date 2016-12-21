@@ -21,6 +21,7 @@ dependencies {
     compile project(':commons')
     compile project(':client')
     compileOnly "org.projectlombok:lombok:1.16.12"
+    compile group: 'org.jooq', name: 'jool', version: '0.9.12'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.22'
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.22'
     compile group: 'org.jetbrains', name: 'annotations', version: '13.0'

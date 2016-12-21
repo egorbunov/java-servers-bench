@@ -33,6 +33,7 @@ public class ControlsView implements BenchmarkControllerListener {
     private TextField serverRunnerPort;
     private Button benchButton;
     private ProgressBar progressBar;
+    private Slider repeatStepCnt;
 
     private final GridPane view;
     private final BenchmarkController benchmarkController;
@@ -50,9 +51,18 @@ public class ControlsView implements BenchmarkControllerListener {
         controlsGridBuilder.row().hSep();
         addBenchmarkServerControls(controlsGridBuilder);
         controlsGridBuilder.row().hSep();
+        addRepeatCntRow(controlsGridBuilder);
+        controlsGridBuilder.row().hSep();
         addBenchButton(controlsGridBuilder);
 
         view = controlsGridBuilder.build();
+    }
+
+    private void addRepeatCntRow(GridBuilder builder) {
+        repeatStepCnt = new Slider(1, 1000, 1);
+        TextField tf = createEditableIntField(repeatStepCnt);
+        builder.row().col(new Label("Each step repeat cnt: "))
+                .col(repeatStepCnt).col(tf);
     }
 
     public GridPane getView() {
@@ -122,7 +132,8 @@ public class ControlsView implements BenchmarkControllerListener {
                     whatToChangeCB.getValue(),
                     (int) changeFrom.getValue(),
                     (int) changeTo.getValue(),
-                    (int) changeStep.getValue()
+                    (int) changeStep.getValue(),
+                    (int) repeatStepCnt.getValue()
             );
             log.info("Settings: " + bs.toString());
             benchmarkController.setSettings(bs);
