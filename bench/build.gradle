@@ -9,7 +9,7 @@ repositories {
 
 jar {
     manifest {
-        attributes "Main-Class": "ru.spbau.mit.java.Main"
+        attributes "Main-Class": "ru.spbau.mit.java.bench.client.GuiApp"
     }
 
     from {

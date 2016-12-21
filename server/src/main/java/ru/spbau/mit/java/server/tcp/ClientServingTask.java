@@ -2,6 +2,7 @@ package ru.spbau.mit.java.server.tcp;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import lombok.extern.slf4j.Slf4j;
+import ru.spbau.mit.java.commons.BenchReqCode;
 import ru.spbau.mit.java.server.RequestProcess;
 import ru.spbau.mit.java.server.stat.OneClientStats;
 
@@ -34,7 +35,7 @@ class ClientServingTask implements Callable<OneClientStats> {
             while (!Thread.currentThread().isInterrupted()) {
                 int msgLen = in.readInt();
 
-                if (msgLen < 0) {
+                if (msgLen == BenchReqCode.DISCONNECT) {
                     // disconnect signal!
                     break;
                 }

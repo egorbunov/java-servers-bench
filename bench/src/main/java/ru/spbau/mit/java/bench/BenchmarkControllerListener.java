@@ -1,6 +1,6 @@
-package ru.spbau.mit.java.bench.client;
+package ru.spbau.mit.java.bench;
 
-import ru.spbau.mit.java.bench.client.stat.BenchmarkResults;
+import ru.spbau.mit.java.bench.stat.BenchmarkResults;
 
 public interface BenchmarkControllerListener {
     void onBenchmarkStarted(BenchmarkSettings settings);

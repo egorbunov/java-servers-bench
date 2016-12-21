@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.bench.client;
+package ru.spbau.mit.java.bench;
 
 public enum Control {
     CLIENT_NUM("Clients number", 1, 5000),

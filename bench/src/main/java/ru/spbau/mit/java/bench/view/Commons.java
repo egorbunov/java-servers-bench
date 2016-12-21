@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.bench.client.view;
+package ru.spbau.mit.java.bench.view;
 
 
 import javafx.scene.Scene;

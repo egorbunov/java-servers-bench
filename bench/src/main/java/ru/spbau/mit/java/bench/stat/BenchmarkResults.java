@@ -1,8 +1,8 @@
-package ru.spbau.mit.java.bench.client.stat;
+package ru.spbau.mit.java.bench.stat;
 
 
 import lombok.Data;
-import ru.spbau.mit.java.bench.client.Control;
+import ru.spbau.mit.java.bench.Control;
 
 import java.util.List;
 

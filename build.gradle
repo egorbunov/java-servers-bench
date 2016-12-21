@@ -3,10 +3,16 @@ version '0.1'
 
 apply plugin: 'java'
 
-sourceCompatibility = 1.5
 
 repositories {
     mavenCentral()
+}
+
+subprojects {
+    apply plugin: 'java'
+    tasks.withType(Jar) {
+        destinationDir = file("$rootDir/build/jars")
+    }
 }
 
 dependencies {

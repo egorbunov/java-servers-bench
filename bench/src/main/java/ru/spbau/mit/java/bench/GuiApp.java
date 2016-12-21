@@ -1,15 +1,15 @@
-package ru.spbau.mit.java.bench.client;
+package ru.spbau.mit.java.bench;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
-import ru.spbau.mit.java.bench.client.stat.BenchmarkResults;
-import ru.spbau.mit.java.bench.client.stat.FinalStat;
-import ru.spbau.mit.java.bench.client.view.BenchLineChartView;
-import ru.spbau.mit.java.bench.client.view.BenchResultTableView;
-import ru.spbau.mit.java.bench.client.view.ControlsView;
+import ru.spbau.mit.java.bench.stat.BenchmarkResults;
+import ru.spbau.mit.java.bench.stat.FinalStat;
+import ru.spbau.mit.java.bench.view.BenchLineChartView;
+import ru.spbau.mit.java.bench.view.BenchResultTableView;
+import ru.spbau.mit.java.bench.view.ControlsView;
 
 import java.util.stream.Collectors;
 

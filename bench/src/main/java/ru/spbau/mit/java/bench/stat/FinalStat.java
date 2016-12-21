@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.bench.client.stat;
+package ru.spbau.mit.java.bench.stat;
 
 import lombok.Data;
 

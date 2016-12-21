@@ -1,25 +1,20 @@
-package ru.spbau.mit.java.bench.client.view;
+package ru.spbau.mit.java.bench.view;
 
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.util.converter.NumberStringConverter;
 import lombok.extern.slf4j.Slf4j;
+import ru.spbau.mit.java.bench.*;
 import ru.spbau.mit.java.bench.client.*;
-import ru.spbau.mit.java.bench.client.Control;
-import ru.spbau.mit.java.bench.client.stat.BenchmarkResults;
+import ru.spbau.mit.java.bench.stat.BenchmarkResults;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
 import ru.spbau.mit.java.commons.ServArchitecture;
 
-import javax.xml.soap.Text;
 import java.util.Arrays;
 import java.util.EnumMap;
 
@@ -29,8 +24,9 @@ import java.util.EnumMap;
 @Slf4j
 public class ControlsView implements BenchmarkControllerListener {
     private ComboBox<ServArchitecture> archTypesComboBox;
-    private EnumMap<Control, Slider> paramSliders = new EnumMap<>(Control.class);
-    private ComboBox<Control> whatToChangeCB;
+    private EnumMap<ru.spbau.mit.java.bench.Control, Slider> paramSliders = new EnumMap<>(ru.spbau.mit.java.bench.Control.class);
+    private EnumMap<ru.spbau.mit.java.bench.Control, TextField> paramTextFields = new EnumMap<>(ru.spbau.mit.java.bench.Control.class);
+    private ComboBox<ru.spbau.mit.java.bench.Control> whatToChangeCB;
     private Slider changeFrom;
     private Slider changeTo;
     private Slider changeStep;
@@ -73,19 +69,20 @@ public class ControlsView implements BenchmarkControllerListener {
         return builder;
     }
 
-    private void setupSliderForControl(Control c, Slider slider) {
+    private void setupSliderForControl(ru.spbau.mit.java.bench.Control c, Slider slider) {
         slider.setBlockIncrement(1);
         slider.setShowTickLabels(true);
-        slider.setMajorTickUnit((c.getMax() + c.getMin()) / 2);
+        slider.setMajorTickUnit((c.getMax() - c.getMin()) / 2);
         slider.setMin(c.getMin());
         slider.setMax(c.getMax());
     }
 
     private GridBuilder addVariableControls(GridBuilder builder) {
-        for (Control c : Control.values()) {
+        for (ru.spbau.mit.java.bench.Control c : ru.spbau.mit.java.bench.Control.values()) {
             Slider slider = new Slider(c.getMin(), c.getMax(), c.getMin());
             setupSliderForControl(c, slider);
             TextField tf = createEditableIntField(slider);
+            paramTextFields.put(c, tf);
             GridPane.setMargin(tf, new Insets(0, 0, 0, 15));
             builder.row().col(new Label(c.toString())).col(slider).col(tf);
             paramSliders.put(c, slider);
@@ -117,10 +114,10 @@ public class ControlsView implements BenchmarkControllerListener {
 
             BenchmarkSettings bs = new BenchmarkSettings(
                     new RunnerOpts(
-                            (int) paramSliders.get(Control.CLIENT_NUM).getValue(),
-                            (int) paramSliders.get(Control.ARRAY_LEN).getValue(),
-                            (int) paramSliders.get(Control.DELAY).getValue(),
-                            (int) paramSliders.get(Control.REQUSET_NUM).getValue()
+                            (int) paramSliders.get(ru.spbau.mit.java.bench.Control.CLIENT_NUM).getValue(),
+                            (int) paramSliders.get(ru.spbau.mit.java.bench.Control.ARRAY_LEN).getValue(),
+                            (int) paramSliders.get(ru.spbau.mit.java.bench.Control.DELAY).getValue(),
+                            (int) paramSliders.get(ru.spbau.mit.java.bench.Control.REQUSET_NUM).getValue()
                     ),
                     serverRunnerHost.getText(),
                     port,
@@ -142,7 +139,7 @@ public class ControlsView implements BenchmarkControllerListener {
     }
 
     private GridBuilder addRangeParameterControls(GridBuilder builder) {
-        whatToChangeCB = new ComboBox<>(FXCollections.observableList(Arrays.asList(Control.values())));
+        whatToChangeCB = new ComboBox<>(FXCollections.observableList(Arrays.asList(ru.spbau.mit.java.bench.Control.values())));
         changeFrom = new Slider(0, 0, 0);
         changeTo = new Slider(0, 0, 0);
         changeStep = new Slider(1, 10000, 10);
@@ -156,13 +153,26 @@ public class ControlsView implements BenchmarkControllerListener {
             changeFrom.setDisable(false);
             changeTo.setDisable(false);
             changeStep.setDisable(false);
+
+            ru.spbau.mit.java.bench.Control c = observable.getValue();
+            Slider sl = paramSliders.get(c);
+            double len = sl.getMax() - sl.getMin();
+            changeStep.setMin((int) (len / 10000));
+            changeStep.setMax((int) (len / 5));
+            changeStep.setBlockIncrement(1);
+            changeStep.setShowTickLabels(true);
+            changeStep.setMajorTickUnit((changeStep.getMax() - changeStep.getMin()) / 2);
+
             for (Slider s : paramSliders.values()) {
                 s.setDisable(false);
             }
-            Control c = observable.getValue();
+            for (TextField s : paramTextFields.values()) {
+                s.setDisable(false);
+            }
             setupSliderForControl(c, changeFrom);
             setupSliderForControl(c, changeTo);
-            paramSliders.get(c).setDisable(true);
+            sl.setDisable(true);
+            paramTextFields.get(c).setDisable(true);
         });
 
         changeTo.valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -183,7 +193,7 @@ public class ControlsView implements BenchmarkControllerListener {
         GridPane.setMargin(changeFromField, new Insets(0, 0, 0, 15));
         GridPane.setMargin(changeStepField, new Insets(0, 0, 0, 15));
 
-        whatToChangeCB.setValue(Control.ARRAY_LEN);
+        whatToChangeCB.setValue(ru.spbau.mit.java.bench.Control.ARRAY_LEN);
         builder.row().col(new Label("What to change: ")).col(whatToChangeCB)
                 .row().col(new Label("From: ")).col(changeFrom).col(changeFromField)
                 .row().col(new Label("To: ")).col(changeTo).col(changeToField)

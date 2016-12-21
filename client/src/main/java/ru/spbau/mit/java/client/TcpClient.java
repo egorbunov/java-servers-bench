@@ -1,6 +1,7 @@
 package ru.spbau.mit.java.client;
 
 import org.apache.commons.io.IOUtils;
+import ru.spbau.mit.java.commons.BenchReqCode;
 import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 
 import java.io.DataInputStream;
@@ -56,7 +57,7 @@ public class TcpClient implements BenchClient {
 
     @Override
     public void disconnect() throws IOException {
-        out.writeInt(-1);
+        out.writeInt(BenchReqCode.DISCONNECT);
         in.close();
         out.close();
         connection.close();

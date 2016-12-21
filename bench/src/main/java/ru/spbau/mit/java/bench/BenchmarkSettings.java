@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.bench.client;
+package ru.spbau.mit.java.bench;
 
 import lombok.Data;
 import ru.spbau.mit.java.client.runner.RunnerOpts;

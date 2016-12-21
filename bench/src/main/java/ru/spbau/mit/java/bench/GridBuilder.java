@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.bench.client;
+package ru.spbau.mit.java.bench;
 
 
 import javafx.geometry.Insets;

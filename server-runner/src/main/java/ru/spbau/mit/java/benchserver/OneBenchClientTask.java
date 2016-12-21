@@ -1,11 +1,13 @@
 package ru.spbau.mit.java.benchserver;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.spbau.mit.java.commons.BenchReqCode;
 import ru.spbau.mit.java.commons.ServArchitecture;
 import ru.spbau.mit.java.commons.proto.BenchOptsMsg;
 import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
 import ru.spbau.mit.java.server.BenchOpts;
 import ru.spbau.mit.java.server.BenchServer;
+import ru.spbau.mit.java.server.tcp.ThreadPoolTcpServer;
 import ru.spbau.mit.java.server.tcp.ThreadedTcpServer;
 import ru.spbau.mit.java.server.stat.ServerStats;
 
@@ -30,62 +32,87 @@ public class OneBenchClientTask implements Runnable {
             DataInputStream in = new DataInputStream(clientSocket.getInputStream());
             DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
             while (!Thread.currentThread().isInterrupted()) {
-                int msgLen = in.readInt();
 
-                if (msgLen < 0) {
-                    log.debug("Client disconnected");
+                BenchOptsMsg opts = readBenchOptions(in);
+                if (opts == null) {
+                    log.debug("Bench client disconnected");
                     break;
                 }
-
-                byte[] msg = new byte[msgLen];
-                in.readFully(msg);
-                BenchOptsMsg opts = BenchOptsMsg.parseFrom(msg);
-
-                log.debug("Gor bench options: " + opts.toString());
-
-                BenchServer serverToBench = null;
+                log.debug("Got bench options: " + opts.toString());
                 ServArchitecture arch = ServArchitecture.fromCode(opts.getServerArchitecture());
-                if (arch == null) {
-                    log.error("Not supported server arch");
-                    break;
-                }
-                switch (arch) {
-                    case TCP_THREAD_PER_CLIENT: {
-                        serverToBench = new ThreadedTcpServer(
-                                opts.getServerPort(),
-                                new BenchOpts(opts.getClientNumber(), opts.getRequestsNumber())
-                        );
-                        break;
-                    }
-                    default: {
-                        log.info("Not supported " + opts.getServerArchitecture());
-                        break;
-                    }
-                }
-
+                BenchServer serverToBench = createBenchServer(arch, opts);
                 if (serverToBench == null) {
-                    out.writeInt(0);
-                } else {
-                    try (BenchServer bs = serverToBench) {
-                        serverToBench.start();
-
-                        out.writeBoolean(true); // client can start benching clients
-
-                        ServerStats stats = serverToBench.bench();
-                        ServerStatsMsg statsMsg = ServerStatsMsg.newBuilder()
-                                .setAvRequestNs(stats.getAvgRequestProcNs())
-                                .setAvSortingNs(stats.getAvgSortingNs())
-                                .build();
-                        byte[] bsStats = statsMsg.toByteArray();
-                        out.writeInt(bsStats.length);
-                        out.write(bsStats);
-                    } catch (Exception e) {
-                        log.error("Error during bench: " + e.getMessage());
-                    }
+                    out.writeInt(BenchReqCode.BAD_ARCH);
+                    continue;
                 }
+                ServerStats stats = null;
+                try (BenchServer bs = serverToBench) {
+                    bs.start();
+                    // client can start benching clients
+                    out.writeInt(BenchReqCode.BENCH_READY);
+                    stats = bs.bench();
+                } catch (IOException e) {
+                    log.error("Error during bench: " + e.getMessage());
+                } catch (InterruptedException e) {
+                    log.error("Interrupt during server stop");
+                }
+
+                if (stats == null) {
+                    out.writeInt(BenchReqCode.BENCH_FAILED);
+                    continue;
+                }
+                // ok
+                ServerStatsMsg statsMsg = ServerStatsMsg.newBuilder()
+                        .setAvRequestNs(stats.getAvgRequestProcNs())
+                        .setAvSortingNs(stats.getAvgSortingNs())
+                        .build();
+                byte[] bsStats = statsMsg.toByteArray();
+                out.writeInt(bsStats.length);
+                out.write(bsStats);
             }
         } catch (IOException e) {
-            log.error("Error: " + e.getMessage());
+            log.error("IO Error: " + e.getMessage());
         }
+    }
+
+    private BenchServer createBenchServer(ServArchitecture arch, BenchOptsMsg opts) throws IOException {
+        BenchServer serverToBench = null;
+        if (arch == null) {
+            log.error("Not supported server arch");
+            return null;
+        }
+        switch (arch) {
+            case TCP_THREAD_PER_CLIENT: {
+                return new ThreadedTcpServer(
+                        opts.getServerPort(),
+                        new BenchOpts(opts.getClientNumber(), opts.getRequestsNumber())
+                );
+            }
+            case TCP_THREAD_POOL: {
+                return new ThreadPoolTcpServer(
+                        opts.getServerPort(),
+                        new BenchOpts(opts.getClientNumber(), opts.getRequestsNumber())
+                );
+            }
+            default: {
+                log.info("Not supported " + opts.getServerArchitecture());
+                break;
+            }
+        }
+        return null;
+    }
+
+    private BenchOptsMsg readBenchOptions(DataInputStream in) throws IOException {
+        int msgLen = in.readInt();
+
+        if (msgLen == BenchReqCode.DISCONNECT) {
+            log.debug("Client disconnected");
+            return null;
+        }
+
+        byte[] msg = new byte[msgLen];
+        in.readFully(msg);
+        BenchOptsMsg opts = BenchOptsMsg.parseFrom(msg);
+        return opts;
     }
 }

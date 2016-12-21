@@ -7,16 +7,6 @@ repositories {
     mavenCentral()
 }
 
-jar {
-    manifest {
-        attributes "Main-Class": "ru.spbau.mit.java.Main"
-    }
-
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-}
-
 dependencies {
     compile project(':commons')
     compileOnly "org.projectlombok:lombok:1.16.12"

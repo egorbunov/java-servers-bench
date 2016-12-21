@@ -2,12 +2,13 @@ package ru.spbau.mit.java.bench.client;
 
 
 import lombok.extern.slf4j.Slf4j;
-import ru.spbau.mit.java.bench.client.stat.FinalStat;
-import ru.spbau.mit.java.bench.client.stat.BenchmarkResults;
+import org.jetbrains.annotations.NotNull;
+import ru.spbau.mit.java.bench.stat.FinalStat;
 import ru.spbau.mit.java.client.ClientCreator;
 import ru.spbau.mit.java.client.TcpClient;
 import ru.spbau.mit.java.client.runner.ClientRunner;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
+import ru.spbau.mit.java.commons.BenchReqCode;
 import ru.spbau.mit.java.commons.ServArchitecture;
 import ru.spbau.mit.java.commons.proto.BenchOptsMsg;
 import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
@@ -17,67 +18,51 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.concurrent.Callable;
+import java.util.Random;
 import java.util.function.Consumer;
 
+/**
+ * Benchmark client, initialized with options specifying
+ * what server architecture to use and how many clients to spawn, etc...
+ * It runs once:
+ *    - sends benchmark info to server-runner (benchmark server, who starts server)
+ *    - awaits while server-runner answers with 'ok' (server for bench started successfully)
+ *    - starts spawning clients and waits for all of them
+ *    - receives server statistics from server-runner
+ */
 @Slf4j
 public class BenchmarkClient {
     private final RunnerOpts runnerOpts;
     private final String benchHost;
+    private final int benchServerRunnerPort;
     private final int benchPort;
     private final ServArchitecture servArchitecture;
     private final Consumer<String> errorCallback;
 
     public BenchmarkClient(RunnerOpts runnerOpts,
-                           String benchHost, int benchPort,
+                           String benchHost, int benchServerRunnerPort,
                            ServArchitecture servArchitecture,
                            Consumer<String> errorCallback) {
 
         this.runnerOpts = runnerOpts;
         this.benchHost = benchHost;
-        this.benchPort = benchPort;
+        this.benchServerRunnerPort = benchServerRunnerPort;
+        // because sometimes server socket not freed quickly
+        this.benchPort = benchServerRunnerPort  + new Random().nextInt(10) + 1;
         this.servArchitecture = servArchitecture;
         this.errorCallback = errorCallback;
     }
 
 
-    public FinalStat run() {
-        try (Socket socket = new Socket(benchHost, benchPort)) {
+    public FinalStat run() throws BenchError {
+        try (Socket socket = new Socket(benchHost, benchServerRunnerPort)) {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             DataInputStream in = new DataInputStream(socket.getInputStream());
 
-            BenchOptsMsg optsMsg = BenchOptsMsg.newBuilder()
-                    .setClientNumber(runnerOpts.getClientNumber())
-                    .setServerPort(benchPort + 1)
-                    .setRequestsNumber(runnerOpts.getRequestNumber())
-                    .setServerArchitecture(servArchitecture.getCode())
-                    .build();
+            sendBenchmarkOptions(out);
+            waitBenchServerReady(in);
 
-            byte[] optsBytes = optsMsg.toByteArray();
-            out.writeInt(optsBytes.length);
-            out.write(optsBytes);
-
-            boolean startedOk = in.readBoolean();
-            if (!startedOk) {
-                System.out.println("=(");
-                socket.close();
-            }
-
-            ClientCreator clientCreator = null;
-            if (servArchitecture == ServArchitecture.TCP_NON_BLOCKING ||
-                    servArchitecture == ServArchitecture.TCP_THREAD_POOL ||
-                    servArchitecture == ServArchitecture.TCP_THREAD_PER_CLIENT) {
-
-                clientCreator = new TcpClient.Creator(benchHost, benchPort + 1);
-            } else if (servArchitecture == ServArchitecture.TCP_SINGLE_THREADED) {
-            } else if (servArchitecture == ServArchitecture.UDP_THREAD_PER_REQUEST) {
-            } else if (servArchitecture == ServArchitecture.UDP_THREAD_POOL) {
-            }
-
-            if (clientCreator == null) {
-                throw new IllegalArgumentException("Unknown serv architecture =(");
-            }
+            ClientCreator clientCreator = createClientFactory();
 
             ClientRunner clientRunner = new ClientRunner(new RunnerOpts(
                     runnerOpts.getClientNumber(),
@@ -87,14 +72,19 @@ public class BenchmarkClient {
                     clientCreator);
 
             double avClientLife = clientRunner.run();
-
             int ansLen = in.readInt();
+            if (ansLen == BenchReqCode.BENCH_FAILED) {
+                log.error("benchmark failed (see bench runner logs)");
+                throw new BenchError("Bench. server ERROR: benchmark failed");
+            }
+
+            // reading server stats
             byte[] statsBs = new byte[ansLen];
             in.readFully(statsBs);
             ServerStatsMsg serverStatsMsg = ServerStatsMsg.parseFrom(statsBs);
 
-            // end!
-            out.writeInt(-1);
+            // disconnecting this client from server
+            out.writeInt(BenchReqCode.DISCONNECT);
 
             return new FinalStat(
                     serverStatsMsg.getAvRequestNs(),
@@ -109,5 +99,48 @@ public class BenchmarkClient {
             errorCallback.accept("IO Excpetion: " + e.getMessage());
         }
         return null;
+    }
+
+    @NotNull
+    private ClientCreator createClientFactory() throws BenchError {
+        ClientCreator clientCreator = null;
+        if (servArchitecture == ServArchitecture.TCP_NON_BLOCKING ||
+                servArchitecture == ServArchitecture.TCP_THREAD_POOL ||
+                servArchitecture == ServArchitecture.TCP_THREAD_PER_CLIENT) {
+
+            clientCreator = new TcpClient.Creator(benchHost, benchPort);
+        } else if (servArchitecture == ServArchitecture.TCP_SINGLE_THREADED) {
+        } else if (servArchitecture == ServArchitecture.UDP_THREAD_PER_REQUEST) {
+        } else if (servArchitecture == ServArchitecture.UDP_THREAD_POOL) {
+        }
+        if (clientCreator == null) {
+            throw new BenchError("Unsupported server architecture (can't create client) =(");
+        }
+        return clientCreator;
+    }
+
+    private void waitBenchServerReady(DataInputStream in) throws IOException, BenchError {
+        int status = in.readInt();
+        if (status == BenchReqCode.BAD_ARCH) {
+            log.error("can't create server with given architecture");
+            throw new BenchError("Bench. server ERROR: can't create server with given architecture");
+        }
+        if (status != BenchReqCode.BENCH_READY) {
+            log.error("unknown error");
+            throw new BenchError("Bench. server ERROR: unknown error");
+        }
+    }
+
+    private void sendBenchmarkOptions(DataOutputStream out) throws IOException {
+        BenchOptsMsg optsMsg = BenchOptsMsg.newBuilder()
+                .setClientNumber(runnerOpts.getClientNumber())
+                .setServerPort(benchPort)
+                .setRequestsNumber(runnerOpts.getRequestNumber())
+                .setServerArchitecture(servArchitecture.getCode())
+                .build();
+
+        byte[] optsBytes = optsMsg.toByteArray();
+        out.writeInt(optsBytes.length);
+        out.write(optsBytes);
     }
 }

@@ -1,10 +1,12 @@
-package ru.spbau.mit.java.bench.client;
+package ru.spbau.mit.java.bench;
 
 
 import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
-import ru.spbau.mit.java.bench.client.stat.BenchmarkResults;
-import ru.spbau.mit.java.bench.client.stat.FinalStat;
+import ru.spbau.mit.java.bench.client.BenchError;
+import ru.spbau.mit.java.bench.client.BenchmarkClient;
+import ru.spbau.mit.java.bench.stat.BenchmarkResults;
+import ru.spbau.mit.java.bench.stat.FinalStat;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
 
 import java.util.ArrayList;
@@ -53,7 +55,14 @@ public class BenchmarkController {
                         s -> Platform.runLater(() -> listeners.forEach(l -> l.onBenchmarkError(s)))
                 );
 
-                FinalStat oneRunRes = bc.run();
+                FinalStat oneRunRes = null;
+                try {
+                    oneRunRes = bc.run();
+                } catch (BenchError benchServerError) {
+                    Platform.runLater(() -> listeners.forEach(
+                            l -> l.onBenchmarkError(benchServerError.getMessage()))
+                    );
+                }
                 if (oneRunRes == null) {
                     log.error("Got null stats, probably error");
                     break;

@@ -17,7 +17,7 @@ public interface BenchServer extends AutoCloseable {
     void stop() throws InterruptedException, IOException;
 
     @Override
-    default void close() throws Exception {
+    default void close() throws InterruptedException, IOException {
         stop();
     }
 }

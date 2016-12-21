@@ -1,36 +1,27 @@
-package ru.spbau.mit.java.bench.client.view;
+package ru.spbau.mit.java.bench.view;
 
 
 import javafx.collections.FXCollections;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import ru.spbau.mit.java.bench.client.BenchmarkControllerListener;
-import ru.spbau.mit.java.bench.client.BenchmarkSettings;
-import ru.spbau.mit.java.bench.client.stat.BenchmarkResults;
-import ru.spbau.mit.java.bench.client.stat.FinalStat;
+import ru.spbau.mit.java.bench.BenchmarkControllerListener;
+import ru.spbau.mit.java.bench.BenchmarkSettings;
+import ru.spbau.mit.java.bench.stat.BenchmarkResults;
+import ru.spbau.mit.java.bench.stat.FinalStat;
 
-import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Observable;
 import java.util.stream.Collectors;
 
 @Slf4j
