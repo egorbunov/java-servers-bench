@@ -39,7 +39,7 @@ public class ClientRunner implements Callable<Double> {
     }
 
     /**
-     * Returns average client lifetime
+     * Returns average client lifetime (nano seconds)
      */
     public double run() {
         log.debug("Running clients, opts: " + opts);

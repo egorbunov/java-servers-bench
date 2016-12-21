@@ -6,7 +6,7 @@ import ru.spbau.mit.java.commons.proto.BenchOptsMsg;
 import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
 import ru.spbau.mit.java.server.BenchOpts;
 import ru.spbau.mit.java.server.BenchServer;
-import ru.spbau.mit.java.server.ThreadedTcpServer;
+import ru.spbau.mit.java.server.tcp.ThreadedTcpServer;
 import ru.spbau.mit.java.server.stat.ServerStats;
 
 import java.io.DataInputStream;
