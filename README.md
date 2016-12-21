@@ -9,6 +9,27 @@
 * `server-runner` - benchmark server, which runs servers and talks to `bench` remotely
 * `test` - ...
 
+## Build and run
+
+```bash
+$ cd java-servers-bench
+$ ./gradlew build
+```
+
+* Successful build will generate `build/jars` and fill it with JARS!
+
+Example usage:
+
+```bash
+# TERMINAL 1
+$ cd build/jars
+$ java -server -jar server-runner-0.1.jar
+
+# TERMINAL 2
+$ cd build/jars
+$ java -jar bench-0.1.jar 
+```
+
 ## GUI (`bench`)
 
 It is tabbed. First tab has controls for configuring bench. parameter. Other tabs 
