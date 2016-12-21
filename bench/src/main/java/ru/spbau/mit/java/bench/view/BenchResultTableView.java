@@ -106,6 +106,8 @@ public class BenchResultTableView implements BenchmarkControllerListener {
 
     @Override
     public void onBenchmarkFinished(BenchmarkResults results) {
+        table.getColumns().clear();
+
         TableColumn<Row, Number> paramColumn =
                 new TableColumn<>(curSettings.getWhatToChage().toString());
         paramColumn.setCellValueFactory(

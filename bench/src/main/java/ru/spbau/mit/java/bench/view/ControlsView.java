@@ -141,8 +141,8 @@ public class ControlsView implements BenchmarkControllerListener {
         });
 
         progressBar = new ProgressBar();
+        progressBar.setMinWidth(400);
         progressBar.setVisible(false);
-        GridPane.setConstraints(progressBar, 1, 12, 3, 2);
         builder.row().col(benchButton).col(progressBar, 2, 1);
     }
 
