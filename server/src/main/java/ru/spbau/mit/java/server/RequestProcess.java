@@ -4,7 +4,6 @@ package ru.spbau.mit.java.server;
 import com.google.protobuf.InvalidProtocolBufferException;
 import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 

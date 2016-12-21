@@ -11,8 +11,8 @@ import java.util.concurrent.Callable;
 
 
 public class OneRequestTask implements Callable<OneRequestStats> {
-    private DataInputStream in;
-    private DataOutputStream out;
+    private final DataInputStream in;
+    private final DataOutputStream out;
 
     public OneRequestTask(DataInputStream in, DataOutputStream out) {
         this.in = in;
@@ -21,7 +21,6 @@ public class OneRequestTask implements Callable<OneRequestStats> {
 
     /**
      * @return null in case end of connection!
-     * @throws IOException
      */
     @Override
     public OneRequestStats call() throws IOException {

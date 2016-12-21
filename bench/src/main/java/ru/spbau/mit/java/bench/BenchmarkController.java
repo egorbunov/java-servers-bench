@@ -15,7 +15,7 @@ import java.util.List;
 @Slf4j
 public class BenchmarkController {
     private BenchmarkSettings settings;
-    private List<BenchmarkControllerListener> listeners = new ArrayList<>();
+    private final List<BenchmarkControllerListener> listeners = new ArrayList<>();
 
     public void setSettings(BenchmarkSettings settings) {
         this.settings = settings;

@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import ru.spbau.mit.java.client.BenchClient;
 import ru.spbau.mit.java.client.ClientCreator;
 import ru.spbau.mit.java.client.stat.ClientStat;
-import ru.spbau.mit.java.commons.StoppableRunnable;
 
 import java.io.IOError;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.function.Supplier;
 
 /**
  * ClientRunner starts clients with given options, these clients make requests
@@ -58,7 +56,7 @@ public class ClientRunner implements Callable<Double> {
             } catch (InterruptedException e) {
                 log.error("interrupt during future.get()");
             } catch (ExecutionException e) {
-                log.error("Client execution excpetion: " + e.getCause().getMessage());
+                log.error("Client execution exception: " + e.getCause().getMessage());
             }
         }
         clientsExecutor.shutdown();
@@ -84,7 +82,7 @@ public class ClientRunner implements Callable<Double> {
                 long end = System.nanoTime();
                 return new ClientStat(end - start);
             } catch (IOException e) {
-                log.error("IO excpetion occured: " + e.getMessage());
+                log.error("IO exception ocurred: " + e.getMessage());
                 throw new IOError(e);
             } catch (InterruptedException e) {
                 log.error("Interrupt during sleep: " + e.getMessage());

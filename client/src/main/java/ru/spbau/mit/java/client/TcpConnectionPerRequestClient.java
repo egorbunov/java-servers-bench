@@ -1,7 +1,6 @@
 package ru.spbau.mit.java.client;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.spbau.mit.java.commons.BenchReqCode;
 import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 
 import java.io.DataInputStream;

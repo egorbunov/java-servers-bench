@@ -3,7 +3,7 @@ package ru.spbau.mit.java.commons;
 public enum  ServArchitecture {
     TCP_THREAD_PER_CLIENT(0, "TCP: Thread per client"),
     TCP_THREAD_POOL(1, "TCP: Thread pool for clients"),
-    TCP_ASYNC(2, "TCP: Asynchronyous"),
+    TCP_ASYNC(2, "TCP: Asynchronous"),
     TCP_SINGLE_THREADED(3, "TCP: Single thread"),
     TCP_NON_BLOCKING(4, "TCP: Nio"),
     UDP_THREAD_PER_REQUEST(5, "UDP: Thread per request"),

@@ -11,7 +11,7 @@ public class GridBuilder {
     private final GridPane grid = new GridPane();
     private int curRow = 0;
     private int curCol = 0;
-    private int maxCol;
+    private final int maxCol;
 
     public GridBuilder(int maxCol) {
         this.maxCol = maxCol;

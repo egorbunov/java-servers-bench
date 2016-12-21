@@ -25,7 +25,6 @@ public class ThreadPoolTcpServer implements BenchServer {
 
     public ThreadPoolTcpServer(int port, BenchOpts opts) throws IOException {
         this.serverSocket = new ServerSocket(port);
-        BenchOpts opts1 = opts;
         threadPool = Executors.newCachedThreadPool();
         this.futureStats = new ArrayList<>(opts.getClientNum());
         // creating client accepting thread

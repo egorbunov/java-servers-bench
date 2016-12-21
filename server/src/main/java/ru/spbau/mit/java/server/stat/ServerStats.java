@@ -4,7 +4,6 @@ import lombok.Data;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple2;
 
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

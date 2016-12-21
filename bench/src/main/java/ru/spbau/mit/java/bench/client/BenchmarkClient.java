@@ -19,7 +19,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Random;
 import java.util.function.Consumer;
 
 /**
@@ -95,8 +94,8 @@ public class BenchmarkClient {
             log.error("Unknown host! " + e.getMessage());
             errorCallback.accept("Unknown host! " + e.getMessage());
         } catch (IOException e) {
-            log.error("IO Excpetion: " + e.getMessage());
-            errorCallback.accept("IO Excpetion: " + e.getMessage());
+            log.error("IO Exception: " + e.getMessage());
+            errorCallback.accept("IO Exception: " + e.getMessage());
         }
         return null;
     }

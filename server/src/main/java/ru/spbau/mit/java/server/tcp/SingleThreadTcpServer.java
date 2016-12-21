@@ -2,7 +2,6 @@ package ru.spbau.mit.java.server.tcp;
 
 
 import lombok.extern.slf4j.Slf4j;
-import ru.spbau.mit.java.commons.BenchReqCode;
 import ru.spbau.mit.java.server.BenchOpts;
 import ru.spbau.mit.java.server.BenchServer;
 import ru.spbau.mit.java.server.stat.OneRequestStats;

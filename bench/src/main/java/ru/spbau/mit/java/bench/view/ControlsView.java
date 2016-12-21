@@ -10,7 +10,6 @@ import javafx.scene.layout.GridPane;
 import javafx.util.converter.NumberStringConverter;
 import lombok.extern.slf4j.Slf4j;
 import ru.spbau.mit.java.bench.*;
-import ru.spbau.mit.java.bench.client.*;
 import ru.spbau.mit.java.bench.stat.BenchmarkResults;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
 import ru.spbau.mit.java.commons.ServArchitecture;
@@ -24,8 +23,8 @@ import java.util.EnumMap;
 @Slf4j
 public class ControlsView implements BenchmarkControllerListener {
     private ComboBox<ServArchitecture> archTypesComboBox;
-    private EnumMap<ru.spbau.mit.java.bench.Control, Slider> paramSliders = new EnumMap<>(ru.spbau.mit.java.bench.Control.class);
-    private EnumMap<ru.spbau.mit.java.bench.Control, TextField> paramTextFields = new EnumMap<>(ru.spbau.mit.java.bench.Control.class);
+    private final EnumMap<ru.spbau.mit.java.bench.Control, Slider> paramSliders = new EnumMap<>(ru.spbau.mit.java.bench.Control.class);
+    private final EnumMap<ru.spbau.mit.java.bench.Control, TextField> paramTextFields = new EnumMap<>(ru.spbau.mit.java.bench.Control.class);
     private ComboBox<ru.spbau.mit.java.bench.Control> whatToChangeCB;
     private Slider changeFrom;
     private Slider changeTo;
@@ -36,7 +35,7 @@ public class ControlsView implements BenchmarkControllerListener {
     private ProgressBar progressBar;
 
     private final GridPane view;
-    private BenchmarkController benchmarkController;
+    private final BenchmarkController benchmarkController;
 
     public ControlsView(BenchmarkController benchmarkController) {
         this.benchmarkController = benchmarkController;
@@ -60,13 +59,12 @@ public class ControlsView implements BenchmarkControllerListener {
         return view;
     }
 
-    private GridBuilder addArchitectureTypeControls(GridBuilder builder) {
+    private void addArchitectureTypeControls(GridBuilder builder) {
         archTypesComboBox = new ComboBox<>(
                 FXCollections.observableList(Arrays.asList(ServArchitecture.values()))
         );
         builder.row().col(new Label("Server architecture: ")).col(archTypesComboBox);
         archTypesComboBox.setValue(ServArchitecture.TCP_THREAD_PER_CLIENT);
-        return builder;
     }
 
     private void setupSliderForControl(ru.spbau.mit.java.bench.Control c, Slider slider) {
@@ -77,7 +75,7 @@ public class ControlsView implements BenchmarkControllerListener {
         slider.setMax(c.getMax());
     }
 
-    private GridBuilder addVariableControls(GridBuilder builder) {
+    private void addVariableControls(GridBuilder builder) {
         for (ru.spbau.mit.java.bench.Control c : ru.spbau.mit.java.bench.Control.values()) {
             Slider slider = new Slider(c.getMin(), c.getMax(), c.getMin());
             setupSliderForControl(c, slider);
@@ -87,17 +85,16 @@ public class ControlsView implements BenchmarkControllerListener {
             builder.row().col(new Label(c.toString())).col(slider).col(tf);
             paramSliders.put(c, slider);
         }
-        return builder;
     }
 
-    private GridBuilder addBenchmarkServerControls(GridBuilder builder) {
+    private void addBenchmarkServerControls(GridBuilder builder) {
         serverRunnerHost = new TextField("localhost");
         serverRunnerPort = new TextField("6666");
-        return builder.row().col(new Label("Benchmark server hostname: ")).col(serverRunnerHost)
+        builder.row().col(new Label("Benchmark server hostname: ")).col(serverRunnerHost)
                 .row().col(new Label("Benchmark server port: ")).col(serverRunnerPort);
     }
 
-    private GridBuilder addBenchButton(GridBuilder builder) {
+    private void addBenchButton(GridBuilder builder) {
         benchButton = new Button();
         benchButton.setText("Do benchmark!");
         benchButton.setOnAction(event -> {
@@ -135,10 +132,10 @@ public class ControlsView implements BenchmarkControllerListener {
         progressBar = new ProgressBar();
         progressBar.setVisible(false);
         GridPane.setConstraints(progressBar, 1, 12, 3, 2);
-        return builder.row().col(benchButton).col(progressBar, 2, 1);
+        builder.row().col(benchButton).col(progressBar, 2, 1);
     }
 
-    private GridBuilder addRangeParameterControls(GridBuilder builder) {
+    private void addRangeParameterControls(GridBuilder builder) {
         whatToChangeCB = new ComboBox<>(FXCollections.observableList(Arrays.asList(ru.spbau.mit.java.bench.Control.values())));
         changeFrom = new Slider(0, 0, 0);
         changeTo = new Slider(0, 0, 0);
@@ -198,8 +195,6 @@ public class ControlsView implements BenchmarkControllerListener {
                 .row().col(new Label("From: ")).col(changeFrom).col(changeFromField)
                 .row().col(new Label("To: ")).col(changeTo).col(changeToField)
                 .row().col(new Label("Step: ")).col(changeStep).col(changeStepField);
-
-        return builder;
     }
 
     private TextField createEditableIntField(Slider sl) {
@@ -220,21 +215,18 @@ public class ControlsView implements BenchmarkControllerListener {
         };
 
         tf.setOnAction(eventHandler);
-        tf.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            eventHandler.handle(null);
-        });
+        tf.focusedProperty().addListener((observable, oldValue, newValue) ->
+                eventHandler.handle(null));
 
         tf.setText(numConv.toString(sl.getValue()));
-        sl.valueProperty().addListener((observable, oldValue, newValue) -> {
-            tf.setText(numConv.toString(newValue.intValue()));
-        });
+        sl.valueProperty().addListener((observable, oldValue, newValue) ->
+                tf.setText(numConv.toString(newValue.intValue())));
         return tf;
     }
 
     private void addSliderLabelListener(Slider sl, Label lb) {
-        sl.valueProperty().addListener((observable, oldValue, newValue) -> {
-            lb.setText(Integer.toString(newValue.intValue()));
-        });
+        sl.valueProperty().addListener((observable, oldValue, newValue) ->
+                lb.setText(Integer.toString(newValue.intValue())));
     }
 
     @Override

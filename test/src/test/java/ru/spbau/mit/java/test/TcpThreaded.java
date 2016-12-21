@@ -12,21 +12,21 @@ import ru.spbau.mit.java.server.stat.ServerStats;
 import java.io.IOException;
 
 public class TcpThreaded {
-    private RunnerOpts runnerOpts = new RunnerOpts(
+    private final RunnerOpts runnerOpts = new RunnerOpts(
             10,
             10,
             10,
             10
     );
 
-    private int serverPort = 5555;
+    private final int serverPort = 5555;
 
-    private ThreadedTcpServer server = new ThreadedTcpServer(serverPort, new BenchOpts(
+    private final ThreadedTcpServer server = new ThreadedTcpServer(serverPort, new BenchOpts(
             runnerOpts.getClientNumber(),
             runnerOpts.getRequestNumber()
     ));
 
-    private ClientRunner clientRunner = new ClientRunner(runnerOpts,
+    private final ClientRunner clientRunner = new ClientRunner(runnerOpts,
             new TcpConnectionPreservingClient.Creator("localhost", serverPort));
 
     public TcpThreaded() throws IOException {

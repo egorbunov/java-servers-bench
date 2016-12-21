@@ -5,7 +5,6 @@ import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ArraySupplier implements Supplier<IntArrayMsg> {

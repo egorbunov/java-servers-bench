@@ -5,7 +5,6 @@ import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.image.WritableImage;
@@ -48,10 +47,10 @@ public class BenchLineChartView implements BenchmarkControllerListener {
         yAxis.setLabel(yLabel);
         lineChart = new LineChart<>(xAxis, yAxis);
         lineChart.setTitle(title);
-        setupRightclickMenu(parent);
+        setupRightClickMenu(parent);
     }
 
-    public void setupRightclickMenu(Stage parent) {
+    public void setupRightClickMenu(Stage parent) {
         // image saving
         final FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Input png file name");
@@ -67,9 +66,7 @@ public class BenchLineChartView implements BenchmarkControllerListener {
             }
         });
         final MenuItem clearItem = new MenuItem("Clear");
-        clearItem.setOnAction(event -> {
-            lineChart.getData().clear();
-        });
+        clearItem.setOnAction(event -> lineChart.getData().clear());
         final ContextMenu menu = new ContextMenu(
                 saveItem,
                 clearItem
