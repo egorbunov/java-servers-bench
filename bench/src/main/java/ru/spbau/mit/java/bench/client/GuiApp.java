@@ -1,22 +1,19 @@
 package ru.spbau.mit.java.bench.client;
 
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.geometry.Insets;
-import javafx.geometry.VPos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
-import ru.spbau.mit.java.commons.ServArchitecture;
+import ru.spbau.mit.java.bench.client.stat.BenchmarkResults;
+import ru.spbau.mit.java.bench.client.stat.FinalStat;
+import ru.spbau.mit.java.bench.client.view.BenchLineChartView;
+import ru.spbau.mit.java.bench.client.view.BenchResultTableView;
+import ru.spbau.mit.java.bench.client.view.ControlsView;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
+import java.util.stream.Collectors;
 
-public class GuiApp extends Application {
+public class GuiApp extends Application implements BenchmarkControllerListener {
     public static void main(String[] args) {
         launch(args);
     }
@@ -24,162 +21,98 @@ public class GuiApp extends Application {
     private Tab controlsTab;
     private Tab requestAvTimeTab;
     private Tab sortAvTimeTab;
-
-    // controls
-    private ComboBox<ServArchitecture> archTypesComboBox;
-
-    private EnumMap<Control, Slider> paramSliders = new EnumMap<>(Control.class);
-
-    private Slider arrayElNumS;
-    private Slider clientNumberS;
-    private Slider requestNumberS;
-    private Slider delaySlider;
-    private ComboBox<Control> whatToChangeCB;
-    private Slider changeFrom;
-    private Slider changeTo;
-    private Slider changeStep;
-
-    private TextField serverRunnerHost;
-    private TextField serverRunnerPort;
-
+    private Tab avClientLifePlotTab;
+    private Tab resultsTableTab;
 
 
     @Override
     public void start(Stage primaryStage) {
-        setupUI(primaryStage);
+        setup(primaryStage);
     }
 
-    public void benchmarkBtnClick() {
-        System.out.println("BENCH!!!");
-    }
-
-    private void setupUI(Stage primaryStage) {
+    private void setup(Stage primaryStage) {
         primaryStage.setTitle("Server benchmark gui");
 
-        GridBuilder controlsGridBuilder = new GridBuilder(3)
-                .vGap(10).hGap(15).padding(new Insets(15, 15, 15, 15));
-        addArchitectureTypeControls(controlsGridBuilder);
-        controlsGridBuilder.row().hSep();
-        addVariableControls(controlsGridBuilder);
-        controlsGridBuilder.row().hSep();
-        addRangeParameterControls(controlsGridBuilder);
-        controlsGridBuilder.row().hSep();
-        addBenchmarkServerControls(controlsGridBuilder);
-        controlsGridBuilder.row().hSep();
-        addBenchButton(controlsGridBuilder);
+        BenchmarkController bc = new BenchmarkController();
+        ControlsView controlsView = new ControlsView(bc);
+        BenchLineChartView requestAvTimePlot = new BenchLineChartView(
+                primaryStage,
+                results -> results.getData().stream().map(FinalStat::getAvRequestNs)
+                        .collect(Collectors.toList()),
+                "av. request time (ms)",
+                "Average request time"
+        );
 
-        controlsTab = new Tab("Control", controlsGridBuilder.build());
-        requestAvTimeTab = new Tab("Request time graph");
-        sortAvTimeTab = new Tab("Sort time graph");
+        BenchLineChartView sortingTimePlot = new BenchLineChartView(
+                primaryStage,
+                results -> results.getData().stream().map(FinalStat::getAvSortNs)
+                        .collect(Collectors.toList()),
+                "av. sorting time (ms)",
+                "Average sorting time"
+        );
 
-        TabPane root = new TabPane(controlsTab, requestAvTimeTab, sortAvTimeTab);
+        BenchLineChartView clientLifetimePlot = new BenchLineChartView(
+                primaryStage,
+                results -> results.getData().stream().map(FinalStat::getAvClientLifetimeNs)
+                        .collect(Collectors.toList()),
+                "av. client lifespan (ms)",
+                "Average client lifespan"
+        );
+        BenchResultTableView tableView = new BenchResultTableView(primaryStage);
+
+        bc.addListener(controlsView);
+        bc.addListener(requestAvTimePlot);
+        bc.addListener(sortingTimePlot);
+        bc.addListener(clientLifetimePlot);
+        bc.addListener(this);
+        bc.addListener(tableView);
+
+        controlsTab = new Tab("Control", controlsView.getView());
+        requestAvTimeTab = new Tab("Request time plot", requestAvTimePlot.getView());
+        sortAvTimeTab = new Tab("Sort time plot", sortingTimePlot.getView());
+        avClientLifePlotTab = new Tab("Client lifespan plot", clientLifetimePlot.getView());
+        resultsTableTab = new Tab("Results table", tableView.getView());
+
+
+        TabPane root = new TabPane(controlsTab, resultsTableTab,
+                requestAvTimeTab, sortAvTimeTab, avClientLifePlotTab);
         requestAvTimeTab.setDisable(true);
+        requestAvTimeTab.setClosable(false);
         sortAvTimeTab.setDisable(true);
+        sortAvTimeTab.setClosable(false);
+        avClientLifePlotTab.setDisable(true);
+        avClientLifePlotTab.setClosable(false);
+        resultsTableTab.setDisable(true);
+        resultsTableTab.setClosable(false);
         primaryStage.setScene(new Scene(root, 650, 600));
         primaryStage.show();
     }
 
-    GridBuilder addArchitectureTypeControls(GridBuilder builder) {
-        archTypesComboBox = new ComboBox<>(
-                FXCollections.observableList(Arrays.asList(ServArchitecture.values()))
-        );
-        builder.row().col(new Label("Server architecture: ")).col(archTypesComboBox);
-        archTypesComboBox.setValue(ServArchitecture.TCP_THREAD_PER_CLIENT);
-        return builder;
+    @Override
+    public void onBenchmarkStarted(BenchmarkSettings settings) {
+        requestAvTimeTab.setDisable(true);
+        sortAvTimeTab.setDisable(true);
+        avClientLifePlotTab.setDisable(true);
+        resultsTableTab.setDisable(true);
+
     }
 
-    void setupSliderForControl(Control c, Slider slider) {
-        slider.setBlockIncrement(1);
-        slider.setShowTickLabels(true);
-        slider.setMajorTickUnit((c.getMax() + c.getMin()) / 2);
-        slider.setMin(c.getMin());
-        slider.setMax(c.getMax());
+    @Override
+    public void onBenchmarkFinished(BenchmarkResults results) {
+        requestAvTimeTab.setDisable(false);
+        sortAvTimeTab.setDisable(false);
+        avClientLifePlotTab.setDisable(false);
+        resultsTableTab.setDisable(false);
     }
 
-    GridBuilder addVariableControls(GridBuilder builder) {
-        for (Control c : Control.values()) {
-            Slider slider = new Slider(c.getMin(), c.getMax(), c.getMin());
-            setupSliderForControl(c, slider);
-            Label label = new Label(Integer.toString((int) slider.getValue()));
-            addSliderLabelListener(slider, label);
-            GridPane.setMargin(label, new Insets(0, 0, 0, 15));
-            builder.row().col(new Label(c.toString())).col(slider).col(label);
-            paramSliders.put(c, slider);
-        }
-        return builder;
-    }
+    @Override
+    public void onBenchmarkProgressUpdate(int progress, int goal) {}
 
-    GridBuilder addBenchmarkServerControls(GridBuilder builder) {
-        serverRunnerHost = new TextField("localhost");
-        serverRunnerPort = new TextField("6666");
-        return builder.row().col(new Label("Benchmark server hostname: ")).col(serverRunnerHost)
-                .row().col(new Label("Benchmark server port: ")).col(serverRunnerPort);
-    }
-
-    GridBuilder addBenchButton(GridBuilder builder) {
-        Button benchBtn = new Button();
-        benchBtn.setText("Do benchmark!");
-        benchBtn.setOnAction(event -> benchmarkBtnClick());
-        return builder.row().col(benchBtn);
-    }
-
-    GridBuilder addRangeParameterControls(GridBuilder builder) {
-        whatToChangeCB = new ComboBox<>(FXCollections.observableList(Arrays.asList(Control.values())));
-        changeFrom = new Slider(0, 0, 0);
-        changeTo = new Slider(0, 0, 0);
-        changeStep = new Slider(1, 10000, 10);
-        changeStep.setBlockIncrement(1);
-        changeStep.setMajorTickUnit(10000 / 2 - 1);
-        changeFrom.setDisable(true);
-        changeTo.setDisable(true);
-        changeStep.setDisable(true);
-
-        whatToChangeCB.valueProperty().addListener((observable, oldValue, newValue) -> {
-            changeFrom.setDisable(false);
-            changeTo.setDisable(false);
-            changeStep.setDisable(false);
-            for (Slider s : paramSliders.values()) {
-                s.setDisable(false);
-            }
-            Control c = observable.getValue();
-            setupSliderForControl(c, changeFrom);
-            setupSliderForControl(c, changeTo);
-            paramSliders.get(c).setDisable(true);
-        });
-
-        changeTo.valueProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.doubleValue() < changeFrom.getValue()) {
-                changeTo.setValue(oldValue.doubleValue());
-            }
-        });
-        changeFrom.valueProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.doubleValue() > changeTo.getValue()) {
-                changeFrom.setValue(oldValue.doubleValue());
-            }
-        });
-
-        Label changeToLbl = new Label(Integer.toString((int) changeTo.getValue()));
-        addSliderLabelListener(changeTo, changeToLbl);
-        Label changeFromLbl = new Label(Integer.toString((int) changeFrom.getValue()));
-        addSliderLabelListener(changeFrom, changeFromLbl);
-        Label changeStepLbl = new Label(Integer.toString((int) changeStep.getValue()));
-        addSliderLabelListener(changeStep, changeStepLbl);
-        GridPane.setMargin(changeToLbl, new Insets(0, 0, 0, 15));
-        GridPane.setMargin(changeFromLbl, new Insets(0, 0, 0, 15));
-        GridPane.setMargin(changeStepLbl, new Insets(0, 0, 0, 15));
-
-        whatToChangeCB.setValue(Control.ARRAY_LEN);
-        builder.row().col(new Label("What to change: ")).col(whatToChangeCB)
-                .row().col(new Label("From: ")).col(changeFrom).col(changeFromLbl)
-                .row().col(new Label("To: ")).col(changeTo).col(changeToLbl)
-                .row().col(new Label("Step: ")).col(changeStep).col(changeStepLbl);
-
-        return builder;
-    }
-
-    private void addSliderLabelListener(Slider sl, Label lb) {
-        sl.valueProperty().addListener((observable, oldValue, newValue) -> {
-            lb.setText(Integer.toString(newValue.intValue()));
-        });
+    @Override
+    public void onBenchmarkError(String s) {
+        requestAvTimeTab.setDisable(true);
+        sortAvTimeTab.setDisable(true);
+        avClientLifePlotTab.setDisable(true);
+        resultsTableTab.setDisable(true);
     }
 }

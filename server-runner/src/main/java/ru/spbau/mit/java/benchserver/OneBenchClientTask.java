@@ -31,6 +31,12 @@ public class OneBenchClientTask implements Runnable {
             DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
             while (!Thread.currentThread().isInterrupted()) {
                 int msgLen = in.readInt();
+
+                if (msgLen < 0) {
+                    log.debug("Client disconnected");
+                    break;
+                }
+
                 byte[] msg = new byte[msgLen];
                 in.readFully(msg);
                 BenchOptsMsg opts = BenchOptsMsg.parseFrom(msg);
@@ -60,26 +66,26 @@ public class OneBenchClientTask implements Runnable {
                 if (serverToBench == null) {
                     out.writeInt(0);
                 } else {
-                    serverToBench.start();
+                    try (BenchServer bs = serverToBench) {
+                        serverToBench.start();
 
-                    out.writeBoolean(true); // client can start benching clients
+                        out.writeBoolean(true); // client can start benching clients
 
-                    ServerStats stats = serverToBench.bench();
-                    ServerStatsMsg statsMsg = ServerStatsMsg.newBuilder()
-                            .setAvRequestNs(stats.getAvgRequestProcNs())
-                            .setAvSortingNs(stats.getAvgSortingNs())
-                            .build();
-                    byte[] bsStats = statsMsg.toByteArray();
-                    out.writeInt(bsStats.length);
-                    out.write(bsStats);
+                        ServerStats stats = serverToBench.bench();
+                        ServerStatsMsg statsMsg = ServerStatsMsg.newBuilder()
+                                .setAvRequestNs(stats.getAvgRequestProcNs())
+                                .setAvSortingNs(stats.getAvgSortingNs())
+                                .build();
+                        byte[] bsStats = statsMsg.toByteArray();
+                        out.writeInt(bsStats.length);
+                        out.write(bsStats);
+                    } catch (Exception e) {
+                        log.error("Error during bench: " + e.getMessage());
+                    }
                 }
-
-                serverToBench.stop();
             }
         } catch (IOException e) {
             log.error("Error: " + e.getMessage());
-        } catch (InterruptedException e) {
-            log.error("Error waiting for bench server to stop: " + e.getMessage());
         }
     }
 }

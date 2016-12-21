@@ -16,7 +16,7 @@ public class TcpThreaded {
             10,
             10,
             10,
-            100
+            10
     );
 
     private int serverPort = 5555;
