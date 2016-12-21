@@ -1,4 +1,4 @@
-# Java server benchmark with GUI
+# Java server benchmark
 
 ## Gradle subprojects
 
