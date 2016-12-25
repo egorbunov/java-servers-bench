@@ -9,9 +9,9 @@ import ru.spbau.mit.java.client.TcpConnectionPerRequestClient;
 import ru.spbau.mit.java.client.TcpConnectionPreservingClient;
 import ru.spbau.mit.java.client.runner.ClientRunner;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
-import ru.spbau.mit.java.commons.BenchReqCode;
+import ru.spbau.mit.java.commons.BenchmarkStatusCode;
 import ru.spbau.mit.java.commons.ServArchitecture;
-import ru.spbau.mit.java.commons.proto.BenchOptsMsg;
+import ru.spbau.mit.java.commons.proto.BenchmarkOpts;
 import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
 
 import java.io.DataInputStream;
@@ -53,7 +53,7 @@ public class BenchmarkClient {
     }
 
 
-    public FinalStat run() throws BenchError {
+    public FinalStat run() throws BenchmarkError {
         try (Socket socket = new Socket(benchHost, benchServerRunnerPort)) {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             DataInputStream in = new DataInputStream(socket.getInputStream());
@@ -72,10 +72,12 @@ public class BenchmarkClient {
                     clientCreator);
 
             double avClientLife = clientRunner.run();
+            out.writeInt(BenchmarkStatusCode.STOP_BENCH);
+
             int ansLen = in.readInt();
-            if (ansLen == BenchReqCode.BENCH_FAILED) {
+            if (ansLen == BenchmarkStatusCode.BENCH_FAILED) {
                 log.error("benchmark failed (see bench runner logs)");
-                throw new BenchError("Bench. server ERROR: benchmark failed");
+                throw new BenchmarkError("Bench. server ERROR: benchmark failed");
             }
 
             // reading server stats
@@ -84,7 +86,7 @@ public class BenchmarkClient {
             ServerStatsMsg serverStatsMsg = ServerStatsMsg.parseFrom(statsBs);
 
             // disconnecting this client from server
-            out.writeInt(BenchReqCode.DISCONNECT);
+            out.writeInt(BenchmarkStatusCode.DISCONNECT);
 
             return new FinalStat(
                     serverStatsMsg.getAvRequestNs(),
@@ -102,7 +104,7 @@ public class BenchmarkClient {
     }
 
     @NotNull
-    private ClientCreator createClientFactory(int benchPort) throws BenchError {
+    private ClientCreator createClientFactory(int benchPort) throws BenchmarkError {
         ClientCreator clientCreator = null;
         if (servArchitecture == ServArchitecture.TCP_NON_BLOCKING ||
                 servArchitecture == ServArchitecture.TCP_THREAD_POOL ||
@@ -115,7 +117,7 @@ public class BenchmarkClient {
         } else if (servArchitecture == ServArchitecture.UDP_THREAD_POOL) {
         }
         if (clientCreator == null) {
-            throw new BenchError("Unsupported server architecture (can't create client) =(");
+            throw new BenchmarkError("Unsupported server architecture (can't create client) =(");
         }
         return clientCreator;
     }
@@ -123,21 +125,21 @@ public class BenchmarkClient {
     /**
      * returns port, where bench server started
      */
-    private int waitBenchServerReady(DataInputStream in) throws IOException, BenchError {
+    private int waitBenchServerReady(DataInputStream in) throws IOException, BenchmarkError {
         int status = in.readInt();
-        if (status == BenchReqCode.BAD_ARCH) {
+        if (status == BenchmarkStatusCode.BAD_ARCH) {
             log.error("can't create server with given architecture");
-            throw new BenchError("Bench. server ERROR: can't create server with given architecture");
+            throw new BenchmarkError("Bench. server ERROR: can't create server with given architecture");
         }
-        if (status != BenchReqCode.BENCH_READY) {
+        if (status != BenchmarkStatusCode.BENCH_READY) {
             log.error("unknown error");
-            throw new BenchError("Bench. server ERROR: unknown error");
+            throw new BenchmarkError("Bench. server ERROR: unknown error");
         }
         return in.readInt();
     }
 
     private void sendBenchmarkOptions(DataOutputStream out) throws IOException {
-        BenchOptsMsg optsMsg = BenchOptsMsg.newBuilder()
+        BenchmarkOpts optsMsg = BenchmarkOpts.newBuilder()
                 .setClientNumber(runnerOpts.getClientNumber())
                 .setRequestsNumber(runnerOpts.getRequestNumber())
                 .setServerArchitecture(servArchitecture.getCode())

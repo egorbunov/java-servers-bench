@@ -2,7 +2,7 @@ package ru.spbau.mit.java.client.runner;
 
 
 import lombok.extern.slf4j.Slf4j;
-import ru.spbau.mit.java.client.BenchClient;
+import ru.spbau.mit.java.client.Client;
 import ru.spbau.mit.java.client.ClientCreator;
 import ru.spbau.mit.java.client.stat.ClientStat;
 
@@ -33,7 +33,7 @@ public class ClientRunner implements Callable<Double> {
         this.opts = opts;
         this.clientCreator = clientCreator;
         this.arraySupplier = new ArraySupplier(opts.getArrayLen());
-        this.clientsExecutor = Executors.newCachedThreadPool();
+        this.clientsExecutor = Executors.newFixedThreadPool(4);
     }
 
     /**
@@ -62,7 +62,7 @@ public class ClientRunner implements Callable<Double> {
         clientsExecutor.shutdown();
         log.debug("Finish!");
 
-        return stats.stream().mapToLong(ClientStat::getLifetimeNs).average().orElse(0);
+        return stats.stream().mapToLong(ClientStat::getLifetimeMs).average().orElse(0);
     }
 
     @Override
@@ -73,13 +73,13 @@ public class ClientRunner implements Callable<Double> {
     private class ClientTask implements Callable<ClientStat> {
         @Override
         public ClientStat call() throws Exception {
-            try (BenchClient client = clientCreator.create()) {
-                long start = System.nanoTime();
+            try (Client client = clientCreator.create()) {
+                long start = System.currentTimeMillis();
                 for (int i = 0; i < opts.getRequestNumber(); ++i) {
                     client.makeBlockingRequest(arraySupplier.get());
                     Thread.sleep(opts.getDeltaMs());
                 }
-                long end = System.nanoTime();
+                long end = System.currentTimeMillis();
                 return new ClientStat(end - start);
             } catch (IOException e) {
                 log.error("IO exception ocurred: " + e.getMessage());

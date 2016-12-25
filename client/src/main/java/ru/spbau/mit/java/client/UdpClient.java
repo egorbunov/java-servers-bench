@@ -7,7 +7,7 @@ import java.io.IOException;
 /**
  * Client, which sends UDP Datagrams to server
  */
-public class UdpClient implements BenchClient {
+public class UdpClient implements Client {
     @Override
     public IntArrayMsg makeBlockingRequest(IntArrayMsg toSort) {
         return null;

@@ -1,6 +1,6 @@
 package ru.spbau.mit.java.client;
 
-import ru.spbau.mit.java.commons.BenchReqCode;
+import ru.spbau.mit.java.commons.BenchmarkStatusCode;
 import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 
 import java.io.DataInputStream;
@@ -12,7 +12,7 @@ import java.net.Socket;
  * Client, which uses tries to establish tcp connection
  * with server
  */
-public class TcpConnectionPreservingClient implements BenchClient {
+public class TcpConnectionPreservingClient implements Client {
     private final Socket connection;
     private final DataOutputStream out;
     private final DataInputStream in;
@@ -30,7 +30,7 @@ public class TcpConnectionPreservingClient implements BenchClient {
         }
 
         @Override
-        public BenchClient create() throws IOException {
+        public Client create() throws IOException {
             return new TcpConnectionPreservingClient(host, port);
         }
     }
@@ -43,10 +43,8 @@ public class TcpConnectionPreservingClient implements BenchClient {
 
     @Override
     public IntArrayMsg makeBlockingRequest(IntArrayMsg toSort) throws IOException {
-        byte[] msg = toSort.toByteArray();
-        out.writeInt(msg.length);
-        out.write(msg);
-        out.flush();
+        Request.writeRequest(toSort, out);
+
         int len = in.readInt();
         byte[] answer = new byte[len];
         in.readFully(answer);
@@ -55,7 +53,7 @@ public class TcpConnectionPreservingClient implements BenchClient {
 
     @Override
     public void disconnect() throws IOException {
-        out.writeInt(BenchReqCode.DISCONNECT);
+        out.writeInt(BenchmarkStatusCode.DISCONNECT);
         connection.close();
     }
 }

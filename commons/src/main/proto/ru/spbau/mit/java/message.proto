@@ -9,7 +9,7 @@ message IntArrayMsg {
     repeated int32 numbers = 1 [packed=true];
 }
 
-message BenchOptsMsg {
+message BenchmarkOpts {
     int32 serverArchitecture = 1;
     int32 clientNumber = 2;
     int32 requestsNumber = 3;

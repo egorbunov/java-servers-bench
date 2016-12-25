@@ -4,7 +4,10 @@ import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 
 import java.io.IOException;
 
-public interface BenchClient extends AutoCloseable {
+/**
+ * Client for server, which is being benchmarked
+ */
+public interface Client extends AutoCloseable {
     IntArrayMsg makeBlockingRequest(IntArrayMsg toSort) throws IOException;
     void disconnect() throws IOException;
 

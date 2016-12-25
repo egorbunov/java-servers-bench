@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.lambda.tuple.Tuple;
 import org.jooq.lambda.tuple.Tuple3;
-import ru.spbau.mit.java.bench.client.BenchError;
+import ru.spbau.mit.java.bench.client.BenchmarkError;
 import ru.spbau.mit.java.bench.client.BenchmarkClient;
 import ru.spbau.mit.java.bench.stat.BenchmarkResults;
 import ru.spbau.mit.java.bench.stat.FinalStat;
@@ -50,22 +50,21 @@ public class BenchmarkController {
             for (int i = settings.getFrom(); i <= settings.getTo(); i += settings.getStep()) {
                 // constructing options
                 RunnerOpts runnerOpts = constructRunnableOpts(i);
-
                 List<FinalStat> stepStats = new ArrayList<>();
                 // repeating one parameter calculations for robust statistics
                 for (int j = 0; j < settings.getStepRepeatCnt(); ++j) {
                     FinalStat x = runOnce(runnerOpts, curProgress++, goalIter);
-                    if (x == null) {
-                        return;
+                    if (x != null) {
+                        stepStats.add(x);
                     }
-                    stepStats.add(x);
                 }
+
                 // averaging statistics!
                 Tuple3<Double, Double, Double> res = stepStats.parallelStream().collect(
                         Tuple.collectors(
                                 Collectors.averagingDouble(FinalStat::getAvRequestNs),
                                 Collectors.averagingDouble(FinalStat::getAvSortNs),
-                                Collectors.averagingDouble(FinalStat::getAvClientLifetimeNs)
+                                Collectors.averagingDouble(FinalStat::getAvClientLifetimeMs)
                         )
                 );
 
@@ -73,8 +72,10 @@ public class BenchmarkController {
                         res.v1(), res.v2(), res.v3()
                 ));
             }
+
             BenchmarkResults res = new BenchmarkResults(settings.getWhatToChage(),
-                    settings.getFrom(), settings.getTo(), settings.getStep(), finalStats);
+                    settings.getFrom(), settings.getTo(), settings.getStep(),
+                    finalStats);
 
             Platform.runLater(() -> {
                 for (BenchmarkControllerListener l : listeners) {
@@ -101,7 +102,7 @@ public class BenchmarkController {
             FinalStat oneRunRes = null;
             try {
                 oneRunRes = bc.run();
-            } catch (BenchError benchServerError) {
+            } catch (BenchmarkError benchServerError) {
                 Platform.runLater(() -> listeners.forEach(
                         l -> l.onBenchmarkError(benchServerError.getMessage()))
                 );

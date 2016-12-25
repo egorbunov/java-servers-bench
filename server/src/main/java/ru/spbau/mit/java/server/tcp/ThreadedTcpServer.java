@@ -2,7 +2,6 @@ package ru.spbau.mit.java.server.tcp;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.spbau.mit.java.commons.net.ConnectionAcceptor;
-import ru.spbau.mit.java.server.BenchOpts;
 import ru.spbau.mit.java.server.BenchServer;
 import ru.spbau.mit.java.server.stat.OneRequestStats;
 import ru.spbau.mit.java.server.stat.ServerStats;
@@ -27,10 +26,10 @@ public class ThreadedTcpServer implements BenchServer {
     private final List<ExecutorService> clientThreads;
     private final List<Future<List<OneRequestStats>>> futureStats;
 
-    public ThreadedTcpServer(int port, BenchOpts opts) throws IOException {
+    public ThreadedTcpServer(int port) throws IOException {
         this.serverSocket = new ServerSocket(port);
-        this.clientThreads = new ArrayList<>(opts.getClientNum());
-        this.futureStats = new ArrayList<>(opts.getClientNum());
+        this.clientThreads = new ArrayList<>();
+        this.futureStats = new ArrayList<>();
         // creating client accepting thread
         this.acceptingThread = new Thread(
                 new ConnectionAcceptor(
@@ -40,40 +39,9 @@ public class ThreadedTcpServer implements BenchServer {
                             ExecutorService clientExecutor = Executors.newSingleThreadExecutor();
                             clientThreads.add(clientExecutor);
                             futureStats.add(clientExecutor.submit(new ClientServingTask(clientSock)));
-                        },
-                        opts.getClientNum() // max number of connections to accept
+                        }
                 )
         );
-    }
-
-
-    @Override
-    public ServerStats bench() {
-        try {
-            log.info("Waiting for accepting thread to stop accepting clients...");
-            acceptingThread.join();
-        } catch (InterruptedException e) {
-            log.error("Accepting thread join interrupted");
-            return null;
-        }
-        log.info("Waiting for clients...");
-        List<List<OneRequestStats>> stats = new ArrayList<>();
-        for (Future<List<OneRequestStats>> f : futureStats) {
-            try {
-                stats.add(f.get());
-            } catch (InterruptedException e) {
-                log.error("Interrupt during client wait: " + e.getMessage());
-            } catch (ExecutionException e) {
-                log.error("Client failed during execution: " + e.getCause());
-            }
-        }
-        log.debug("Shutting down threads...");
-        for (ExecutorService ct : clientThreads) {
-            ct.shutdown();
-        }
-        ServerStats res = ServerStats.calc(stats.stream().flatMap(List::stream).parallel());
-        log.info("Ok. Returning stats: " + res);
-        return res;
     }
 
     @Override
@@ -82,21 +50,41 @@ public class ThreadedTcpServer implements BenchServer {
     }
 
     @Override
-    public void stop() throws InterruptedException, IOException {
-        acceptingThread.interrupt();
-        acceptingThread.join();
-        for (Future<?> f : futureStats) {
-            f.cancel(true);
-        }
+    public ServerStats stop() throws IOException, InterruptedException {
         for (ExecutorService ct : clientThreads) {
             ct.shutdownNow();
         }
+        acceptingThread.interrupt();
         serverSocket.close();
+        acceptingThread.join();
+
+        for (Future<?> f : futureStats) {
+            if (!f.isDone()) {
+                f.cancel(true);
+            }
+        }
+
+        log.info("Getting stats from all the clients...");
+        List<List<OneRequestStats>> stats = new ArrayList<>();
+        for (Future<List<OneRequestStats>> f : futureStats) {
+            try {
+                if (!f.isCancelled()) {
+                    stats.add(f.get());
+                }
+            } catch (InterruptedException e) {
+                log.error("Interrupt during client wait: " + e.getMessage());
+            } catch (ExecutionException e) {
+                log.error("Client failed during execution: " + e.getCause());
+            }
+        }
+        ServerStats res = ServerStats.calc(stats.stream().flatMap(List::stream).parallel());
+        log.info("Got statistics from " + stats.size() + " clients");
+        log.info("Ok. Returning stats: " + res);
+        return res;
     }
 
     @Override
     public int getPort() {
         return serverSocket.getLocalPort();
     }
-
 }

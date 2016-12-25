@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class BenchResultTableView implements BenchmarkControllerListener {
+public class BenchmarkResultTableView implements BenchmarkControllerListener {
     private final TableView<Row> table = new TableView<>();
     private final VBox tableBox;
     private BenchmarkSettings curSettings;
@@ -43,7 +43,7 @@ public class BenchResultTableView implements BenchmarkControllerListener {
         return tableBox;
     }
 
-    public BenchResultTableView(Stage parent) {
+    public BenchmarkResultTableView(Stage parent) {
         tableLabel = new Label("Benchmark data");
         tableLabel.setFont(new Font("Arial", 15));
         table.setEditable(false);
@@ -135,7 +135,7 @@ public class BenchResultTableView implements BenchmarkControllerListener {
             rows.add(new Row(curSettings.getFrom() + i * curSettings.getStep(),
                     x.getAvSortNs() / 1e6,
                     x.getAvRequestNs() / 1e6,
-                    x.getAvClientLifetimeNs() / 1e6));
+                    x.getAvClientLifetimeMs() / 1e6));
         }
         table.setItems(FXCollections.observableArrayList(rows));
         table.getColumns().addAll(paramColumn, avSortTimeCol, avRequestProcTime, avClientLifespan);

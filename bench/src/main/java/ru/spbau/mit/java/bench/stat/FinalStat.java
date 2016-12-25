@@ -20,5 +20,5 @@ public class FinalStat {
     /**
      * Average working time of the client
      */
-    private final double avClientLifetimeNs;
+    private final double avClientLifetimeMs;
 }

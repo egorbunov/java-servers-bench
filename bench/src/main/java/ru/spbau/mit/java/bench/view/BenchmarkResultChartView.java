@@ -28,7 +28,7 @@ import java.util.function.Function;
  * Email: egor-mailbox@ya.com
  */
 @Slf4j
-public class BenchLineChartView implements BenchmarkControllerListener {
+public class BenchmarkResultChartView implements BenchmarkControllerListener {
     private final Function<BenchmarkResults, List<Double>> resultMapper;
     private BenchmarkSettings bSettings;
     private final LineChart<Number, Number> lineChart;
@@ -36,7 +36,7 @@ public class BenchLineChartView implements BenchmarkControllerListener {
     private final NumberAxis yAxis;
     private boolean preserveLines = false;
 
-    public BenchLineChartView(
+    public BenchmarkResultChartView(
             Stage parent,
             Function<BenchmarkResults, List<Double>> resultMapper,
             String yLabel,
@@ -107,7 +107,7 @@ public class BenchLineChartView implements BenchmarkControllerListener {
 
         XYChart.Series<Number, Number> series = new XYChart.Series<>();
         for (int i = 0; i < numbers.size(); ++i) {
-            double y = numbers.get(i) / 1e6; // to ms
+            double y = numbers.get(i);
             int x = results.getFrom() + results.getStep() * i;
             series.getData().add(new XYChart.Data<>(x, y));
             series.setName(bSettings.getServArchitecture().toString());

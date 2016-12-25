@@ -31,7 +31,6 @@ class ClientServingTask implements Callable<List<OneRequestStats>> {
         try (Socket sock = clientSock) {
             DataOutputStream out = new DataOutputStream(sock.getOutputStream());
             DataInputStream in = new DataInputStream(sock.getInputStream());
-
             while (!Thread.currentThread().isInterrupted()) {
                 OneRequestTask oneRequestTask = new OneRequestTask(in, out);
                 OneRequestStats stat = oneRequestTask.call();

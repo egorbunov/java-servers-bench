@@ -1,6 +1,7 @@
 package ru.spbau.mit.java.client;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.spbau.mit.java.commons.BenchmarkStatusCode;
 import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 
 import java.io.DataInputStream;
@@ -12,7 +13,7 @@ import java.net.Socket;
  * Client, which creates connection on every request
  */
 @Slf4j
-public class TcpConnectionPerRequestClient implements BenchClient {
+public class TcpConnectionPerRequestClient implements Client {
     private final String host;
     private final int port;
 
@@ -31,7 +32,7 @@ public class TcpConnectionPerRequestClient implements BenchClient {
         }
 
         @Override
-        public BenchClient create() throws IOException {
+        public Client create() throws IOException {
             return new TcpConnectionPerRequestClient(host, port);
         }
     }
@@ -41,14 +42,12 @@ public class TcpConnectionPerRequestClient implements BenchClient {
         try (Socket connection = new Socket(host, port)) {
             DataInputStream in = new DataInputStream(connection.getInputStream());
             DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-            byte[] msg = toSort.toByteArray();
-            out.writeInt(msg.length);
-            out.write(msg);
-            out.flush();
+
+            Request.writeRequest(toSort, out);
+
             int len = in.readInt();
             byte[] answer = new byte[len];
             in.readFully(answer);
-//            out.writeInt(BenchReqCode.DISCONNECT);
             return IntArrayMsg.parseFrom(answer);
         }
     }

@@ -6,9 +6,8 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
 import ru.spbau.mit.java.bench.stat.BenchmarkResults;
-import ru.spbau.mit.java.bench.stat.FinalStat;
-import ru.spbau.mit.java.bench.view.BenchLineChartView;
-import ru.spbau.mit.java.bench.view.BenchResultTableView;
+import ru.spbau.mit.java.bench.view.BenchmarkResultChartView;
+import ru.spbau.mit.java.bench.view.BenchmarkResultTableView;
 import ru.spbau.mit.java.bench.view.ControlsView;
 
 import java.util.stream.Collectors;
@@ -35,30 +34,30 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
 
         BenchmarkController bc = new BenchmarkController();
         ControlsView controlsView = new ControlsView(bc);
-        BenchLineChartView requestAvTimePlot = new BenchLineChartView(
+        BenchmarkResultChartView requestAvTimePlot = new BenchmarkResultChartView(
                 primaryStage,
-                results -> results.getData().stream().map(FinalStat::getAvRequestNs)
+                results -> results.getData().stream().map(x -> x.getAvRequestNs() / 1e6)
                         .collect(Collectors.toList()),
                 "av. request time (ms)",
                 "Average request time"
         );
 
-        BenchLineChartView sortingTimePlot = new BenchLineChartView(
+        BenchmarkResultChartView sortingTimePlot = new BenchmarkResultChartView(
                 primaryStage,
-                results -> results.getData().stream().map(FinalStat::getAvSortNs)
+                results -> results.getData().stream().map(x -> x.getAvSortNs() / 1e6)
                         .collect(Collectors.toList()),
                 "av. sorting time (ms)",
                 "Average sorting time"
         );
 
-        BenchLineChartView clientLifetimePlot = new BenchLineChartView(
+        BenchmarkResultChartView clientLifetimePlot = new BenchmarkResultChartView(
                 primaryStage,
-                results -> results.getData().stream().map(FinalStat::getAvClientLifetimeNs)
+                results -> results.getData().stream().map(x -> x.getAvClientLifetimeMs())
                         .collect(Collectors.toList()),
                 "av. client lifespan (ms)",
                 "Average client lifespan"
         );
-        BenchResultTableView tableView = new BenchResultTableView(primaryStage);
+        BenchmarkResultTableView tableView = new BenchmarkResultTableView(primaryStage);
 
         bc.addListener(controlsView);
         bc.addListener(requestAvTimePlot);

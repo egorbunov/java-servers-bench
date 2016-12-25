@@ -9,5 +9,5 @@ import lombok.Data;
  */
 @Data
 public class ClientStat {
-    private final long lifetimeNs;
+    private final long lifetimeMs;
 }

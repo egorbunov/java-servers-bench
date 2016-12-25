@@ -8,17 +8,17 @@ import java.io.IOException;
  * Base interface for benchmarkable server
  */
 public interface BenchServer extends AutoCloseable {
-    /**
-     * performs benchmark (blocking call) (call start before it)
-     */
-    ServerStats bench();
-
     void start();
-    void stop() throws InterruptedException, IOException;
+
+    /**
+     * Terminates server and returns all statistics, which was calculated
+     * till the moment of the call
+     */
+    ServerStats stop() throws InterruptedException, IOException, BenchingError;
     int getPort();
 
     @Override
-    default void close() throws InterruptedException, IOException {
+    default void close() throws InterruptedException, IOException, BenchingError {
         stop();
     }
 }
