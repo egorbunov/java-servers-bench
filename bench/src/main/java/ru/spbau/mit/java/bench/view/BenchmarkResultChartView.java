@@ -110,7 +110,7 @@ public class BenchmarkResultChartView implements BenchmarkControllerListener {
             double y = numbers.get(i);
             int x = results.getFrom() + results.getStep() * i;
             series.getData().add(new XYChart.Data<>(x, y));
-            series.setName(bSettings.getServArchitecture().toString());
+            series.setName(bSettings.getServerArch().toString());
         }
 
         if (!preserveLines) {

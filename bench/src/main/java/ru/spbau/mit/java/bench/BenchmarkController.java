@@ -95,7 +95,7 @@ public class BenchmarkController {
                     runnerOpts,
                     settings.getBenchServerHost(),
                     settings.getBenchServerPort(),
-                    settings.getServArchitecture(),
+                    settings.getServerArch(),
                     s -> Platform.runLater(() -> listeners.forEach(l -> l.onBenchmarkError(s)))
             );
 

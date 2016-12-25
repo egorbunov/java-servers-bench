@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 public class FixedPoolUdpServer implements BenchServer {
     private final DatagramSocket socket;
     private final ExecutorService requestProcessingService;
-    private final int maxArrayLen;
+    private final int maxDatagramSize;
     private final ExecutorService receiver;
     private Future<?> receiverFuture;
     private final List<Future<OneRequestStats>> requestsFs;
@@ -33,11 +33,12 @@ public class FixedPoolUdpServer implements BenchServer {
     /**
      * @param port in case port is zero, server socket is opened at any available port
      * @param threadNum number of threads, which will process requests
+     * @param maxDatagramSize max number of bytes in datagram
      */
-    public FixedPoolUdpServer(int port, int threadNum, int maxArrayLen) throws SocketException {
+    public FixedPoolUdpServer(int port, int threadNum, int maxDatagramSize) throws SocketException {
         socket = new DatagramSocket(port);
         requestProcessingService = Executors.newFixedThreadPool(threadNum);
-        this.maxArrayLen = maxArrayLen;
+        this.maxDatagramSize = maxDatagramSize;
         receiver = Executors.newSingleThreadExecutor();
         requestsFs = new ArrayList<>();
     }
@@ -46,7 +47,7 @@ public class FixedPoolUdpServer implements BenchServer {
     public void start() {
         receiverFuture = receiver.submit(new UdpReceiverTask(
                 socket,
-                Protobuf.predictArrayMsgSize(maxArrayLen),
+                maxDatagramSize,
                 datagramPacket -> {
                     UdpOneRequestTask task =
                             new UdpOneRequestTask(datagramPacket, socket, System.nanoTime());

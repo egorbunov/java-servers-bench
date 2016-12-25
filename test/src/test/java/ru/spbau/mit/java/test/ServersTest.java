@@ -6,12 +6,14 @@ import org.junit.Test;
 import ru.spbau.mit.java.client.*;
 import ru.spbau.mit.java.client.runner.ArraySupplier;
 import ru.spbau.mit.java.commons.proto.IntArrayMsg;
+import ru.spbau.mit.java.commons.proto.Protobuf;
 import ru.spbau.mit.java.server.BenchServer;
 import ru.spbau.mit.java.server.BenchingError;
 import ru.spbau.mit.java.server.tcp.simple.SingleThreadTcpServer;
 import ru.spbau.mit.java.server.tcp.simple.ThreadPoolTcpServer;
 import ru.spbau.mit.java.server.tcp.simple.ThreadedTcpServer;
 import ru.spbau.mit.java.server.udp.FixedPoolUdpServer;
+import ru.spbau.mit.java.server.udp.ThreadedUdpServer;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -39,7 +41,10 @@ public class ServersTest {
                     new TcpConnectionPerRequestClient.Creator(host, serverPort)),
             new Tuple2<>(
                     () -> new FixedPoolUdpServer(serverPort, Runtime.getRuntime().availableProcessors() - 1,
-                            arraySize),
+                            Protobuf.predictArrayMsgSize(arraySize)),
+                    new UdpClient.Creator(host, serverPort)),
+            new Tuple2<>(
+                    () -> new ThreadedUdpServer(serverPort, Protobuf.predictArrayMsgSize(arraySize)),
                     new UdpClient.Creator(host, serverPort))
             );
 

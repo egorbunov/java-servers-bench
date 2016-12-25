@@ -100,7 +100,7 @@ public class BenchmarkResultTableView implements BenchmarkControllerListener {
     public void onBenchmarkStarted(BenchmarkSettings settings) {
         this.curSettings = settings;
         tableLabel.setText("Benchmark data. "
-                + settings.getServArchitecture() + "; "
+                + settings.getServerArch() + "; "
                 + settings.getRunnerOpts());
     }
 

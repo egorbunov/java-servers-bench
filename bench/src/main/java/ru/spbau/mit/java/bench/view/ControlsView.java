@@ -12,7 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import ru.spbau.mit.java.bench.*;
 import ru.spbau.mit.java.bench.stat.BenchmarkResults;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
-import ru.spbau.mit.java.commons.ServArchitecture;
+import ru.spbau.mit.java.commons.ServerArch;
+import ru.spbau.mit.java.commons.ServerArch;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -22,7 +23,7 @@ import java.util.EnumMap;
  */
 @Slf4j
 public class ControlsView implements BenchmarkControllerListener {
-    private ComboBox<ServArchitecture> archTypesComboBox;
+    private ComboBox<ServerArch> archTypesComboBox;
     private final EnumMap<ru.spbau.mit.java.bench.Control, Slider> paramSliders = new EnumMap<>(ru.spbau.mit.java.bench.Control.class);
     private final EnumMap<ru.spbau.mit.java.bench.Control, TextField> paramTextFields = new EnumMap<>(ru.spbau.mit.java.bench.Control.class);
     private ComboBox<ru.spbau.mit.java.bench.Control> whatToChangeCB;
@@ -71,10 +72,10 @@ public class ControlsView implements BenchmarkControllerListener {
 
     private void addArchitectureTypeControls(GridBuilder builder) {
         archTypesComboBox = new ComboBox<>(
-                FXCollections.observableList(Arrays.asList(ServArchitecture.values()))
+                FXCollections.observableList(Arrays.asList(ServerArch.values()))
         );
         builder.row().col(new Label("Server architecture: ")).col(archTypesComboBox);
-        archTypesComboBox.setValue(ServArchitecture.TCP_THREAD_PER_CLIENT);
+        archTypesComboBox.setValue(ServerArch.TCP_THREAD_PER_CLIENT);
     }
 
     private void setupSliderForControl(ru.spbau.mit.java.bench.Control c, Slider slider) {

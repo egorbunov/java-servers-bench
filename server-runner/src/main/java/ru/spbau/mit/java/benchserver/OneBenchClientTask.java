@@ -2,16 +2,18 @@ package ru.spbau.mit.java.benchserver;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.spbau.mit.java.commons.BenchmarkStatusCode;
-import ru.spbau.mit.java.commons.ServArchitecture;
+import ru.spbau.mit.java.commons.ServerArch;
 import ru.spbau.mit.java.commons.proto.BenchmarkOpts;
+import ru.spbau.mit.java.commons.proto.Protobuf;
 import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
 import ru.spbau.mit.java.server.BenchServer;
 import ru.spbau.mit.java.server.BenchingError;
+import ru.spbau.mit.java.server.stat.ServerStats;
 import ru.spbau.mit.java.server.tcp.simple.SingleThreadTcpServer;
 import ru.spbau.mit.java.server.tcp.simple.ThreadPoolTcpServer;
 import ru.spbau.mit.java.server.tcp.simple.ThreadedTcpServer;
-import ru.spbau.mit.java.server.stat.ServerStats;
 import ru.spbau.mit.java.server.udp.FixedPoolUdpServer;
+import ru.spbau.mit.java.server.udp.ThreadedUdpServer;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,61 +22,61 @@ import java.net.Socket;
 
 /**
  * Task, which serves requests from one client
+ *
+ * It servers only one request for benchmarking and returns
  */
 @Slf4j
 public class OneBenchClientTask implements Runnable {
     private final Socket sock;
-    public OneBenchClientTask(Socket sock) {
+
+    OneBenchClientTask(Socket sock) {
         this.sock = sock;
     }
 
     @Override
     public void run() {
-        try (Socket clientSocket = sock) {
-            DataInputStream in = new DataInputStream(clientSocket.getInputStream());
-            DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+        try (Socket clientSocket = sock;
+             DataInputStream in = new DataInputStream(clientSocket.getInputStream());
+             DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+             BenchServer serverToBench = createServerForBenchmark(in)) {
 
-            while (!Thread.currentThread().isInterrupted()) {
-                BenchmarkOpts opts = readBenchOptions(in);
-                if (opts == null) {
-                    log.debug("Bench client disconnected");
-                    break;
-                }
-
-                log.debug("Got bench options: " + opts.toString());
-                BenchServer serverToBench = createBenchServer(opts);
-                if (serverToBench == null) {
-                    out.writeInt(BenchmarkStatusCode.BAD_ARCH);
-                    continue;
-                }
-
-                log.debug("Starting server for benchmark...");
-                serverToBench.start();
-                // client can start benching clients
-                out.writeInt(BenchmarkStatusCode.BENCH_READY);
-                // send port, where the server is running
-                out.writeInt(serverToBench.getPort());
-
-                int code = in.readInt();
-                if (code != BenchmarkStatusCode.STOP_BENCH) {
-                    log.error("Got strange code from client, expected STOP_BENCH code");
-                }
-
-                log.debug("Stopping server for benchmark...");
-                ServerStats stats = null;
-                try {
-                    stats = serverToBench.stop();
-                } catch (InterruptedException e) {
-                    log.error("Failed to stop server for benchmarking: " + e.getMessage());
-                } catch (BenchingError e) {
-                    log.error("Failed to stop server for benchmarking: " + e.getCause());
-                }
-
-                writeAnswerToClient(stats, out);
+            if (serverToBench == null) {
+                out.writeInt(BenchmarkStatusCode.BAD_ARCH);
+                return;
             }
+
+            log.debug("Starting server for benchmark...");
+            serverToBench.start();
+            log.debug("Server started at port " + serverToBench.getPort());
+            out.writeInt(BenchmarkStatusCode.BENCH_READY);
+            out.writeInt(serverToBench.getPort());
+
+            int code = in.readInt();
+            if (code != BenchmarkStatusCode.STOP_BENCH) {
+                log.error("Got strange code from client, expected STOP_BENCH code");
+            }
+
+            log.debug("Stopping server for benchmark...");
+            ServerStats stats = null;
+            try {
+                stats = serverToBench.stop();
+            } catch (InterruptedException e) {
+                log.error("Failed to stop server for benchmarking: " + e.getMessage());
+            } catch (BenchingError e) {
+                log.error("Failed to stop server for benchmarking: " + e.getCause());
+            }
+            writeAnswerToClient(stats, out);
+
         } catch (IOException e) {
-            log.error("IO Error: " + e.getMessage());
+            log.error("IO Exception: " + e);
+        } catch (BenchingError e) {
+            log.error("Bench error: " + e);
+        } catch (ClientDisconnected e) {
+            log.debug("Client disconnected, returning");
+        } catch (InterruptedException e) {
+            log.debug("Interrupted: " + e);
         }
+        log.debug("Returning from client...");
     }
 
     private void writeAnswerToClient(ServerStats stats, DataOutputStream out) throws IOException {
@@ -94,8 +96,19 @@ public class OneBenchClientTask implements Runnable {
         out.write(bsStats);
     }
 
+    private BenchServer createServerForBenchmark(DataInputStream in)
+            throws IOException, ClientDisconnected {
+        BenchmarkOpts opts = readBenchOptions(in);
+        if (opts == null) {
+            log.debug("Bench client disconnected");
+            throw new ClientDisconnected();
+        }
+        log.debug("Got bench options: " + opts.toString());
+        return createBenchServer(opts);
+    }
+
     private BenchServer createBenchServer(BenchmarkOpts opts) throws IOException {
-        ServArchitecture arch = ServArchitecture.fromCode(opts.getServerArchitecture());
+        ServerArch arch = ServerArch.fromCode(opts.getServerArchitecture());
         if (arch == null) {
             log.error("Not supported server arch");
             return null;
@@ -112,7 +125,10 @@ public class OneBenchClientTask implements Runnable {
             }
             case UDP_THREAD_POOL: {
                 return new FixedPoolUdpServer(0, Runtime.getRuntime().availableProcessors() - 1,
-                        opts.getMaxArraySize());
+                        Protobuf.predictArrayMsgSize(opts.getMaxArraySize()));
+            }
+            case UDP_THREAD_PER_REQUEST: {
+                return new ThreadedUdpServer(0, Protobuf.predictArrayMsgSize(opts.getMaxArraySize()));
             }
             default: {
                 log.info("Not supported " + opts.getServerArchitecture());

@@ -1,6 +1,6 @@
 package ru.spbau.mit.java.commons;
 
-public enum  ServArchitecture {
+public enum ServerArch {
     TCP_THREAD_PER_CLIENT(0, "TCP: Thread per client"),
     TCP_THREAD_POOL(1, "TCP: Thread pool for clients"),
     TCP_ASYNC(2, "TCP: Asynchronous"),
@@ -12,7 +12,7 @@ public enum  ServArchitecture {
     private final int code;
     private final String descr;
 
-    ServArchitecture(int code, String s) {
+    ServerArch(int code, String s) {
         this.code = code;
         this.descr = s;
     }
@@ -21,8 +21,8 @@ public enum  ServArchitecture {
         return code;
     }
 
-    public static ServArchitecture fromCode(int code) {
-        for (ServArchitecture sa : ServArchitecture.values()) {
+    public static ServerArch fromCode(int code) {
+        for (ServerArch sa : ServerArch.values()) {
             if (sa.code == code) {
                 return sa;
             }

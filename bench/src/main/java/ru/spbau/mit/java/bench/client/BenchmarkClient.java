@@ -11,7 +11,8 @@ import ru.spbau.mit.java.client.UdpClient;
 import ru.spbau.mit.java.client.runner.ClientRunner;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
 import ru.spbau.mit.java.commons.BenchmarkStatusCode;
-import ru.spbau.mit.java.commons.ServArchitecture;
+import ru.spbau.mit.java.commons.ServerArch;
+import ru.spbau.mit.java.commons.ServerArch;
 import ru.spbau.mit.java.commons.proto.BenchmarkOpts;
 import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
 
@@ -36,20 +37,20 @@ public class BenchmarkClient {
     private final RunnerOpts runnerOpts;
     private final String benchHost;
     private final int benchServerRunnerPort;
-    private final ServArchitecture servArchitecture;
+    private final ServerArch serverArch;
     private final Consumer<String> errorCallback;
 
     public BenchmarkClient(RunnerOpts runnerOpts,
                            String benchHost,
                            int benchServerRunnerPort,
-                           ServArchitecture servArchitecture,
+                           ServerArch serverArch,
                            Consumer<String> errorCallback) {
 
         this.runnerOpts = runnerOpts;
         this.benchHost = benchHost;
         this.benchServerRunnerPort = benchServerRunnerPort;
         // because sometimes server socket not freed quickly
-        this.servArchitecture = servArchitecture;
+        this.serverArch = serverArch;
         this.errorCallback = errorCallback;
     }
 
@@ -86,9 +87,6 @@ public class BenchmarkClient {
             in.readFully(statsBs);
             ServerStatsMsg serverStatsMsg = ServerStatsMsg.parseFrom(statsBs);
 
-            // disconnecting this client from server
-            out.writeInt(BenchmarkStatusCode.DISCONNECT);
-
             return new FinalStat(
                     serverStatsMsg.getAvReceiveSendGapNs(),
                     serverStatsMsg.getAvRequestProcNs(),
@@ -107,15 +105,15 @@ public class BenchmarkClient {
     @NotNull
     private ClientCreator createClientFactory(int benchPort) throws BenchmarkError {
         ClientCreator clientCreator = null;
-        if (servArchitecture == ServArchitecture.TCP_NON_BLOCKING ||
-                servArchitecture == ServArchitecture.TCP_THREAD_POOL ||
-                servArchitecture == ServArchitecture.TCP_THREAD_PER_CLIENT) {
+        if (serverArch == ServerArch.TCP_NON_BLOCKING ||
+                serverArch == ServerArch.TCP_THREAD_POOL ||
+                serverArch == ServerArch.TCP_THREAD_PER_CLIENT) {
 
             clientCreator = new TcpConnectionPreservingClient.Creator(benchHost, benchPort);
-        } else if (servArchitecture == ServArchitecture.TCP_SINGLE_THREADED) {
+        } else if (serverArch == ServerArch.TCP_SINGLE_THREADED) {
             clientCreator = new TcpConnectionPerRequestClient.Creator(benchHost, benchPort);
-        } else if (servArchitecture == ServArchitecture.UDP_THREAD_PER_REQUEST) {
-        } else if (servArchitecture == ServArchitecture.UDP_THREAD_POOL) {
+        } else if (serverArch == ServerArch.UDP_THREAD_PER_REQUEST
+                || serverArch == ServerArch.UDP_THREAD_POOL) {
             clientCreator = new UdpClient.Creator(benchHost, benchPort);
         }
         if (clientCreator == null) {
@@ -142,7 +140,7 @@ public class BenchmarkClient {
 
     private void sendBenchmarkOptions(DataOutputStream out) throws IOException {
         BenchmarkOpts optsMsg = BenchmarkOpts.newBuilder()
-                .setServerArchitecture(servArchitecture.getCode())
+                .setServerArchitecture(serverArch.getCode())
                 .setMaxArraySize(runnerOpts.getArrayLen())
                 .build();
 

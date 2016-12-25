@@ -31,5 +31,6 @@ public class ConnectionAcceptor implements Runnable {
                 log.error("Error accepting connection: " + e.getMessage());
             }
         }
+        log.debug("Exiting connection acceptor...");
     }
 }

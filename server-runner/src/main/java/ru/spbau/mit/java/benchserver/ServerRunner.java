@@ -45,12 +45,12 @@ public class ServerRunner {
 
 
     void stop() throws IOException {
+        serverSocket.close();
+        clientExecutor.shutdownNow();
+        acceptor.shutdownNow();
         acceptingTaskF.cancel(true);
         for (Future f : clientTasksFs) {
             f.cancel(true);
         }
-        serverSocket.close();
-        clientExecutor.shutdownNow();
-        acceptor.shutdownNow();
     }
 }

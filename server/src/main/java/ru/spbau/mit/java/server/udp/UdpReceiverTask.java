@@ -23,7 +23,7 @@ public class UdpReceiverTask implements Runnable {
 
     @Override
     public void run() {
-        while (!Thread.interrupted()) {
+        while (!Thread.currentThread().isInterrupted()) {
             byte[] msg = new byte[maxDatagramSize];
             DatagramPacket packet = new DatagramPacket(msg, msg.length);
             try {
@@ -32,8 +32,6 @@ public class UdpReceiverTask implements Runnable {
                 log.error("Error receiving datagram: " + e);
                 continue;
             }
-
-            log.debug("Received datagram! Ok.");
             onReceiveCallback.accept(packet);
         }
     }
