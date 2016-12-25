@@ -24,29 +24,29 @@ import java.util.stream.Collectors;
 public class ServersTest {
     private static final int serverPort = 5555;
     private static final String host = "localhost";
-    private static final int arraySize = 100000;
+    private static final int arraySize = 10000;
 
     private interface ServerCreator {
         BenchServer create() throws IOException;
     }
 
     private final static List<Tuple2<ServerCreator, ClientCreator>> serverClasses = Arrays.asList(
-//            new Tuple2<>(
-//                    () -> new ThreadedTcpServer(serverPort),
-//                    new TcpConnectionPreservingClient.Creator(host, serverPort)),
-//            new Tuple2<>(
-//                    () -> new ThreadPoolTcpServer(serverPort),
-//                    new TcpConnectionPreservingClient.Creator(host, serverPort)),
-//            new Tuple2<>(
-//                    () -> new SingleThreadTcpServer(serverPort),
-//                    new TcpConnectionPerRequestClient.Creator(host, serverPort)),
-//            new Tuple2<>(
-//                    () -> new FixedPoolUdpServer(serverPort, Runtime.getRuntime().availableProcessors() - 1,
-//                            Protobuf.predictArrayMsgSize(arraySize)),
-//                    new UdpClient.Creator(host, serverPort)),
-//            new Tuple2<>(
-//                    () -> new ThreadedUdpServer(serverPort, Protobuf.predictArrayMsgSize(arraySize)),
-//                    new UdpClient.Creator(host, serverPort)),
+            new Tuple2<>(
+                    () -> new ThreadedTcpServer(serverPort),
+                    new TcpConnectionPreservingClient.Creator(host, serverPort)),
+            new Tuple2<>(
+                    () -> new ThreadPoolTcpServer(serverPort),
+                    new TcpConnectionPreservingClient.Creator(host, serverPort)),
+            new Tuple2<>(
+                    () -> new SingleThreadTcpServer(serverPort),
+                    new TcpConnectionPerRequestClient.Creator(host, serverPort)),
+            new Tuple2<>(
+                    () -> new FixedPoolUdpServer(serverPort, Runtime.getRuntime().availableProcessors() - 1,
+                            Protobuf.predictArrayMsgSize(arraySize)),
+                    new UdpClient.Creator(host, serverPort)),
+            new Tuple2<>(
+                    () -> new ThreadedUdpServer(serverPort, Protobuf.predictArrayMsgSize(arraySize)),
+                    new UdpClient.Creator(host, serverPort)),
             new Tuple2<>(
                     () -> new NioTcpServer(serverPort, Runtime.getRuntime().availableProcessors() - 1),
                     new TcpConnectionPreservingClient.Creator(host, serverPort))

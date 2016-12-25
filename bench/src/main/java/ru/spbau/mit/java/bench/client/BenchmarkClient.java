@@ -12,7 +12,6 @@ import ru.spbau.mit.java.client.runner.ClientRunner;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
 import ru.spbau.mit.java.commons.BenchmarkStatusCode;
 import ru.spbau.mit.java.commons.ServerArch;
-import ru.spbau.mit.java.commons.ServerArch;
 import ru.spbau.mit.java.commons.proto.BenchmarkOpts;
 import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
 
@@ -108,7 +107,6 @@ public class BenchmarkClient {
         if (serverArch == ServerArch.TCP_NON_BLOCKING ||
                 serverArch == ServerArch.TCP_THREAD_POOL ||
                 serverArch == ServerArch.TCP_THREAD_PER_CLIENT) {
-
             clientCreator = new TcpConnectionPreservingClient.Creator(benchHost, benchPort);
         } else if (serverArch == ServerArch.TCP_SINGLE_THREADED) {
             clientCreator = new TcpConnectionPerRequestClient.Creator(benchHost, benchPort);

@@ -9,6 +9,7 @@ import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
 import ru.spbau.mit.java.server.BenchServer;
 import ru.spbau.mit.java.server.BenchingError;
 import ru.spbau.mit.java.server.stat.ServerStats;
+import ru.spbau.mit.java.server.tcp.nonblocking.NioTcpServer;
 import ru.spbau.mit.java.server.tcp.simple.SingleThreadTcpServer;
 import ru.spbau.mit.java.server.tcp.simple.ThreadPoolTcpServer;
 import ru.spbau.mit.java.server.tcp.simple.ThreadedTcpServer;
@@ -124,11 +125,14 @@ public class OneBenchClientTask implements Runnable {
                 return new SingleThreadTcpServer(0);
             }
             case UDP_THREAD_POOL: {
-                return new FixedPoolUdpServer(0, Runtime.getRuntime().availableProcessors() - 1,
+                return new FixedPoolUdpServer(0, Runtime.getRuntime().availableProcessors(),
                         Protobuf.predictArrayMsgSize(opts.getMaxArraySize()));
             }
             case UDP_THREAD_PER_REQUEST: {
                 return new ThreadedUdpServer(0, Protobuf.predictArrayMsgSize(opts.getMaxArraySize()));
+            }
+            case TCP_NON_BLOCKING: {
+                return new NioTcpServer(0, Runtime.getRuntime().availableProcessors());
             }
             default: {
                 log.info("Not supported " + opts.getServerArchitecture());

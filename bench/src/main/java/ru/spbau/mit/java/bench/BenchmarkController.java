@@ -53,7 +53,15 @@ public class BenchmarkController {
                 List<FinalStat> stepStats = new ArrayList<>();
                 // repeating one parameter calculations for robust statistics
                 for (int j = 0; j < settings.getStepRepeatCnt(); ++j) {
-                    FinalStat x = runOnce(runnerOpts, curProgress++, goalIter);
+                    FinalStat x = null;
+                    try {
+                        x = runOnce(runnerOpts, curProgress++, goalIter);
+                    } catch (BenchmarkError e) {
+                        Platform.runLater(() -> listeners.forEach(
+                                l -> l.onBenchmarkError(e.getMessage()))
+                        );
+                        return;
+                    }
                     if (x != null) {
                         stepStats.add(x);
                     }
@@ -84,7 +92,7 @@ public class BenchmarkController {
             });
         }
 
-        private FinalStat runOnce(RunnerOpts runnerOpts, int curProgress, int goal) {
+        private FinalStat runOnce(RunnerOpts runnerOpts, int curProgress, int goal) throws BenchmarkError {
             Platform.runLater(() -> {
                 for (BenchmarkControllerListener l : listeners) {
                     l.onBenchmarkProgressUpdate(curProgress, goal);
@@ -99,14 +107,7 @@ public class BenchmarkController {
                     s -> Platform.runLater(() -> listeners.forEach(l -> l.onBenchmarkError(s)))
             );
 
-            FinalStat oneRunRes = null;
-            try {
-                oneRunRes = bc.run();
-            } catch (BenchmarkError benchServerError) {
-                Platform.runLater(() -> listeners.forEach(
-                        l -> l.onBenchmarkError(benchServerError.getMessage()))
-                );
-            }
+            FinalStat oneRunRes = bc.run();
             if (oneRunRes == null) {
                 log.error("Got null stats, probably error");
             } else {
