@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.server.tcp.sock;
+package ru.spbau.mit.java.server.tcp.simple;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.spbau.mit.java.commons.BenchmarkStatusCode;
@@ -26,28 +26,23 @@ public class OneRequestTask implements Callable<OneRequestStats> {
      */
     @Override
     public OneRequestStats call() throws IOException {
-//        log.debug("Reading msg len...");
         int msgLen = in.readInt();
-//        log.debug("Read: " + msgLen);
         if (msgLen == BenchmarkStatusCode.DISCONNECT) {
             // disconnect signal!
             return null;
         }
         byte[] msg = new byte[msgLen];
         long startRequest = System.nanoTime();
-//        log.debug("Reading array...");
         in.readFully(msg);
-        long startSort = System.nanoTime();
+        long startProc = System.nanoTime();
         byte[] answerBytes = RequestProcess.process(msg);
-        long endSort = System.nanoTime();
+        long endProc = System.nanoTime();
         out.writeInt(answerBytes.length);
         out.write(answerBytes);
         long endRequest = System.nanoTime();
-        // writing statistics
-//        log.debug("RETURNING STATS for request!");
         return new OneRequestStats(
                 endRequest - startRequest,
-                endSort - startSort
+                endProc - startProc
         );
     }
 }

@@ -18,8 +18,8 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
     }
 
     private Tab controlsTab;
-    private Tab requestAvTimeTab;
-    private Tab sortAvTimeTab;
+    private Tab sendReceiveGapTab;
+    private Tab requestProcAvTimeTab;
     private Tab avClientLifePlotTab;
     private Tab resultsTableTab;
 
@@ -34,20 +34,20 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
 
         BenchmarkController bc = new BenchmarkController();
         ControlsView controlsView = new ControlsView(bc);
-        BenchmarkResultChartView requestAvTimePlot = new BenchmarkResultChartView(
+        BenchmarkResultChartView sendReceiveGapPlot = new BenchmarkResultChartView(
                 primaryStage,
-                results -> results.getData().stream().map(x -> x.getAvRequestNs() / 1e6)
+                results -> results.getData().stream().map(x -> x.getAvReceiveSendGapNs() / 1e6)
                         .collect(Collectors.toList()),
-                "av. request time (ms)",
-                "Average request time"
+                "av. time btw. receive and send (ms)",
+                "Average receive-send time"
         );
 
-        BenchmarkResultChartView sortingTimePlot = new BenchmarkResultChartView(
+        BenchmarkResultChartView requestProcTimePlot = new BenchmarkResultChartView(
                 primaryStage,
-                results -> results.getData().stream().map(x -> x.getAvSortNs() / 1e6)
+                results -> results.getData().stream().map(x -> x.getAvReceiveSendGapNs() / 1e6)
                         .collect(Collectors.toList()),
-                "av. sorting time (ms)",
-                "Average sorting time"
+                "av. request processing time (ms)",
+                "Average processing time"
         );
 
         BenchmarkResultChartView clientLifetimePlot = new BenchmarkResultChartView(
@@ -60,25 +60,25 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
         BenchmarkResultTableView tableView = new BenchmarkResultTableView(primaryStage);
 
         bc.addListener(controlsView);
-        bc.addListener(requestAvTimePlot);
-        bc.addListener(sortingTimePlot);
+        bc.addListener(sendReceiveGapPlot);
+        bc.addListener(requestProcTimePlot);
         bc.addListener(clientLifetimePlot);
         bc.addListener(this);
         bc.addListener(tableView);
 
         controlsTab = new Tab("Control", controlsView.getView());
-        requestAvTimeTab = new Tab("Request time plot", requestAvTimePlot.getView());
-        sortAvTimeTab = new Tab("Sort time plot", sortingTimePlot.getView());
+        sendReceiveGapTab = new Tab("Receive req. send resp. gap plot", sendReceiveGapPlot.getView());
+        requestProcAvTimeTab = new Tab("Request proc. time plot", requestProcTimePlot.getView());
         avClientLifePlotTab = new Tab("Client lifespan plot", clientLifetimePlot.getView());
         resultsTableTab = new Tab("Results table", tableView.getView());
 
 
         TabPane root = new TabPane(controlsTab, resultsTableTab,
-                requestAvTimeTab, sortAvTimeTab, avClientLifePlotTab);
-        requestAvTimeTab.setDisable(true);
-        requestAvTimeTab.setClosable(false);
-        sortAvTimeTab.setDisable(true);
-        sortAvTimeTab.setClosable(false);
+                sendReceiveGapTab, requestProcAvTimeTab, avClientLifePlotTab);
+        sendReceiveGapTab.setDisable(true);
+        sendReceiveGapTab.setClosable(false);
+        requestProcAvTimeTab.setDisable(true);
+        requestProcAvTimeTab.setClosable(false);
         avClientLifePlotTab.setDisable(true);
         avClientLifePlotTab.setClosable(false);
         resultsTableTab.setDisable(true);
@@ -89,8 +89,8 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
 
     @Override
     public void onBenchmarkStarted(BenchmarkSettings settings) {
-        requestAvTimeTab.setDisable(true);
-        sortAvTimeTab.setDisable(true);
+        sendReceiveGapTab.setDisable(true);
+        requestProcAvTimeTab.setDisable(true);
         avClientLifePlotTab.setDisable(true);
         resultsTableTab.setDisable(true);
 
@@ -98,8 +98,8 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
 
     @Override
     public void onBenchmarkFinished(BenchmarkResults results) {
-        requestAvTimeTab.setDisable(false);
-        sortAvTimeTab.setDisable(false);
+        sendReceiveGapTab.setDisable(false);
+        requestProcAvTimeTab.setDisable(false);
         avClientLifePlotTab.setDisable(false);
         resultsTableTab.setDisable(false);
     }
@@ -109,8 +109,8 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
 
     @Override
     public void onBenchmarkError(String s) {
-        requestAvTimeTab.setDisable(true);
-        sortAvTimeTab.setDisable(true);
+        sendReceiveGapTab.setDisable(true);
+        requestProcAvTimeTab.setDisable(true);
         avClientLifePlotTab.setDisable(true);
         resultsTableTab.setDisable(true);
     }

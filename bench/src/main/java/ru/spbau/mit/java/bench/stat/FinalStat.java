@@ -10,13 +10,13 @@ import lombok.Data;
 @Data
 public class FinalStat {
     /**
-     * Average time in nano seconds for request processing (read + sort + write)
+     * Average time in nano seconds between receiving request and sending response
      */
-    private final double avRequestNs;
+    private final double avReceiveSendGapNs;
     /**
-     * Average time for sorting array
+     * Average time for sorting array (request processing)
      */
-    private final double avSortNs;
+    private final double avRequestProcNs;
     /**
      * Average working time of the client
      */

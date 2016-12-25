@@ -6,7 +6,7 @@ import ru.spbau.mit.java.client.TcpConnectionPerRequestClient;
 import ru.spbau.mit.java.client.runner.ClientRunner;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
 import ru.spbau.mit.java.server.BenchingError;
-import ru.spbau.mit.java.server.tcp.sock.SingleThreadTcpServer;
+import ru.spbau.mit.java.server.tcp.simple.SingleThreadTcpServer;
 import ru.spbau.mit.java.server.stat.ServerStats;
 
 import java.io.IOException;

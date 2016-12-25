@@ -72,7 +72,7 @@ public class ClientRunner implements Callable<Double> {
 
     private class ClientTask implements Callable<ClientStat> {
         @Override
-        public ClientStat call() throws Exception {
+        public ClientStat call() throws IOException {
             try (Client client = clientCreator.create()) {
                 long start = System.currentTimeMillis();
                 for (int i = 0; i < opts.getRequestNumber(); ++i) {

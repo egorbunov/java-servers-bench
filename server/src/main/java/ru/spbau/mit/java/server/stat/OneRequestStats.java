@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class OneRequestStats {
-    private final long requestProcTime;
-    private final long sortingTime;
+    private final long receiveSendGapNs;
+    private final long requestProcNs;
 }

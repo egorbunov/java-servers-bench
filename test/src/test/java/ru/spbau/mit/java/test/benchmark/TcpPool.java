@@ -5,7 +5,7 @@ import org.junit.Test;
 import ru.spbau.mit.java.client.TcpConnectionPreservingClient;
 import ru.spbau.mit.java.client.runner.ClientRunner;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
-import ru.spbau.mit.java.server.tcp.sock.ThreadPoolTcpServer;
+import ru.spbau.mit.java.server.tcp.simple.ThreadPoolTcpServer;
 import ru.spbau.mit.java.server.stat.ServerStats;
 
 import java.io.IOException;

@@ -34,8 +34,8 @@ public class BenchmarkResultTableView implements BenchmarkControllerListener {
     @Data
     public static class Row {
         private final int param;
-        private final double avSortTime;
-        private final double avRequestTime;
+        private final double avRequestProcTime;
+        private final double avReceiveSendGap;
         private final double avClientLifespan;
     }
 
@@ -75,9 +75,9 @@ public class BenchmarkResultTableView implements BenchmarkControllerListener {
                 for (Row r : table.getItems()) {
                     writer.write(Integer.toString(r.param));
                     writer.write(',');
-                    writer.write(Double.toString(r.avSortTime));
+                    writer.write(Double.toString(r.avRequestProcTime));
                     writer.write(',');
-                    writer.write(Double.toString(r.avRequestTime));
+                    writer.write(Double.toString(r.avReceiveSendGap));
                     writer.write(',');
                     writer.write(Double.toString(r.avClientLifespan));
                     writer.write(System.lineSeparator());
@@ -114,14 +114,14 @@ public class BenchmarkResultTableView implements BenchmarkControllerListener {
                 new PropertyValueFactory<>("param")
         );
         TableColumn<Row, Number> avSortTimeCol =
-                new TableColumn<>("Sort time");
+                new TableColumn<>("Request proc. time");
         avSortTimeCol.setCellValueFactory(
-                new PropertyValueFactory<>("avSortTime")
+                new PropertyValueFactory<>("avRequestProcTime")
         );
         TableColumn<Row, Number> avRequestProcTime =
-                new TableColumn<>("Request proc. time");
+                new TableColumn<>("Receive-send gap");
         avRequestProcTime.setCellValueFactory(
-                new PropertyValueFactory<>("avRequestTime")
+                new PropertyValueFactory<>("avReceiveSendGap")
         );
         TableColumn<Row, Number> avClientLifespan =
                 new TableColumn<>("Client lifespan");
@@ -133,9 +133,9 @@ public class BenchmarkResultTableView implements BenchmarkControllerListener {
         for (int i = 0; i < data.size(); ++i) {
             FinalStat x = data.get(i);
             rows.add(new Row(curSettings.getFrom() + i * curSettings.getStep(),
-                    x.getAvSortNs() / 1e6,
-                    x.getAvRequestNs() / 1e6,
-                    x.getAvClientLifetimeMs() / 1e6));
+                    x.getAvRequestProcNs() / 1e6,
+                    x.getAvReceiveSendGapNs() / 1e6,
+                    x.getAvClientLifetimeMs()));
         }
         table.setItems(FXCollections.observableArrayList(rows));
         table.getColumns().addAll(paramColumn, avSortTimeCol, avRequestProcTime, avClientLifespan);

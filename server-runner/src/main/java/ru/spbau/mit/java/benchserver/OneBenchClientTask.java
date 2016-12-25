@@ -7,10 +7,11 @@ import ru.spbau.mit.java.commons.proto.BenchmarkOpts;
 import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
 import ru.spbau.mit.java.server.BenchServer;
 import ru.spbau.mit.java.server.BenchingError;
-import ru.spbau.mit.java.server.tcp.sock.SingleThreadTcpServer;
-import ru.spbau.mit.java.server.tcp.sock.ThreadPoolTcpServer;
-import ru.spbau.mit.java.server.tcp.sock.ThreadedTcpServer;
+import ru.spbau.mit.java.server.tcp.simple.SingleThreadTcpServer;
+import ru.spbau.mit.java.server.tcp.simple.ThreadPoolTcpServer;
+import ru.spbau.mit.java.server.tcp.simple.ThreadedTcpServer;
 import ru.spbau.mit.java.server.stat.ServerStats;
+import ru.spbau.mit.java.server.udp.FixedPoolUdpServer;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -47,6 +48,7 @@ public class OneBenchClientTask implements Runnable {
                     continue;
                 }
 
+                log.debug("Starting server for benchmark...");
                 serverToBench.start();
                 // client can start benching clients
                 out.writeInt(BenchmarkStatusCode.BENCH_READY);
@@ -58,6 +60,7 @@ public class OneBenchClientTask implements Runnable {
                     log.error("Got strange code from client, expected STOP_BENCH code");
                 }
 
+                log.debug("Stopping server for benchmark...");
                 ServerStats stats = null;
                 try {
                     stats = serverToBench.stop();
@@ -83,8 +86,8 @@ public class OneBenchClientTask implements Runnable {
         // ok
         log.info(stats.toString());
         ServerStatsMsg statsMsg = ServerStatsMsg.newBuilder()
-                .setAvRequestNs(stats.getAvgRequestProcNs())
-                .setAvSortingNs(stats.getAvgSortingNs())
+                .setAvReceiveSendGapNs(stats.getAvReceiveSendGapNs())
+                .setAvRequestProcNs(stats.getAvRequestProcNs())
                 .build();
         byte[] bsStats = statsMsg.toByteArray();
         out.writeInt(bsStats.length);
@@ -106,6 +109,10 @@ public class OneBenchClientTask implements Runnable {
             }
             case TCP_SINGLE_THREADED: {
                 return new SingleThreadTcpServer(0);
+            }
+            case UDP_THREAD_POOL: {
+                return new FixedPoolUdpServer(0, Runtime.getRuntime().availableProcessors() - 1,
+                        opts.getMaxArraySize());
             }
             default: {
                 log.info("Not supported " + opts.getServerArchitecture());

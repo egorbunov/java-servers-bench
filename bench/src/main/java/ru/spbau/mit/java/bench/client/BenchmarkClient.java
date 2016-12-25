@@ -7,6 +7,7 @@ import ru.spbau.mit.java.bench.stat.FinalStat;
 import ru.spbau.mit.java.client.ClientCreator;
 import ru.spbau.mit.java.client.TcpConnectionPerRequestClient;
 import ru.spbau.mit.java.client.TcpConnectionPreservingClient;
+import ru.spbau.mit.java.client.UdpClient;
 import ru.spbau.mit.java.client.runner.ClientRunner;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
 import ru.spbau.mit.java.commons.BenchmarkStatusCode;
@@ -89,8 +90,8 @@ public class BenchmarkClient {
             out.writeInt(BenchmarkStatusCode.DISCONNECT);
 
             return new FinalStat(
-                    serverStatsMsg.getAvRequestNs(),
-                    serverStatsMsg.getAvSortingNs(),
+                    serverStatsMsg.getAvReceiveSendGapNs(),
+                    serverStatsMsg.getAvRequestProcNs(),
                     avClientLife
             );
         } catch (UnknownHostException e) {
@@ -115,6 +116,7 @@ public class BenchmarkClient {
             clientCreator = new TcpConnectionPerRequestClient.Creator(benchHost, benchPort);
         } else if (servArchitecture == ServArchitecture.UDP_THREAD_PER_REQUEST) {
         } else if (servArchitecture == ServArchitecture.UDP_THREAD_POOL) {
+            clientCreator = new UdpClient.Creator(benchHost, benchPort);
         }
         if (clientCreator == null) {
             throw new BenchmarkError("Unsupported server architecture (can't create client) =(");
@@ -140,9 +142,8 @@ public class BenchmarkClient {
 
     private void sendBenchmarkOptions(DataOutputStream out) throws IOException {
         BenchmarkOpts optsMsg = BenchmarkOpts.newBuilder()
-                .setClientNumber(runnerOpts.getClientNumber())
-                .setRequestsNumber(runnerOpts.getRequestNumber())
                 .setServerArchitecture(servArchitecture.getCode())
+                .setMaxArraySize(runnerOpts.getArrayLen())
                 .build();
 
         byte[] optsBytes = optsMsg.toByteArray();

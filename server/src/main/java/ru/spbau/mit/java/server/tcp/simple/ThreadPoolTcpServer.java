@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.server.tcp.sock;
+package ru.spbau.mit.java.server.tcp.simple;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.spbau.mit.java.commons.net.ConnectionAcceptor;
@@ -15,20 +15,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-/**
- * Server, which creates one thread per client and uses tcp sockets for
- * communication with them
- */
 @Slf4j
-public class ThreadedTcpServer implements BenchServer {
+public class ThreadPoolTcpServer implements BenchServer {
     private final ServerSocket serverSocket;
     private final Thread acceptingThread;
-    private final List<ExecutorService> clientThreads;
+    private final ExecutorService threadPool;
     private final List<Future<List<OneRequestStats>>> futureStats;
 
-    public ThreadedTcpServer(int port) throws IOException {
+    public ThreadPoolTcpServer(int port) throws IOException {
         this.serverSocket = new ServerSocket(port);
-        this.clientThreads = new ArrayList<>();
+        threadPool = Executors.newCachedThreadPool();
         this.futureStats = new ArrayList<>();
         // creating client accepting thread
         this.acceptingThread = new Thread(
@@ -36,9 +32,7 @@ public class ThreadedTcpServer implements BenchServer {
                         serverSocket,
                         clientSock -> {
                             // handle connection accepted event
-                            ExecutorService clientExecutor = Executors.newSingleThreadExecutor();
-                            clientThreads.add(clientExecutor);
-                            futureStats.add(clientExecutor.submit(new ClientServingTask(clientSock)));
+                            futureStats.add(threadPool.submit(new ClientServingTask(clientSock)));
                         }
                 )
         );
@@ -50,10 +44,8 @@ public class ThreadedTcpServer implements BenchServer {
     }
 
     @Override
-    public ServerStats stop() throws IOException, InterruptedException {
-        for (ExecutorService ct : clientThreads) {
-            ct.shutdownNow();
-        }
+    public ServerStats stop() throws InterruptedException, IOException {
+        threadPool.shutdownNow();
         acceptingThread.interrupt();
         serverSocket.close();
         acceptingThread.join();
@@ -87,4 +79,5 @@ public class ThreadedTcpServer implements BenchServer {
     public int getPort() {
         return serverSocket.getLocalPort();
     }
+
 }

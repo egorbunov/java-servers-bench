@@ -62,8 +62,8 @@ public class BenchmarkController {
                 // averaging statistics!
                 Tuple3<Double, Double, Double> res = stepStats.parallelStream().collect(
                         Tuple.collectors(
-                                Collectors.averagingDouble(FinalStat::getAvRequestNs),
-                                Collectors.averagingDouble(FinalStat::getAvSortNs),
+                                Collectors.averagingDouble(FinalStat::getAvReceiveSendGapNs),
+                                Collectors.averagingDouble(FinalStat::getAvRequestProcNs),
                                 Collectors.averagingDouble(FinalStat::getAvClientLifetimeMs)
                         )
                 );

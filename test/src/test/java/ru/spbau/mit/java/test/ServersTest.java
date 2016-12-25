@@ -3,20 +3,17 @@ package ru.spbau.mit.java.test;
 import org.jooq.lambda.tuple.Tuple2;
 import org.junit.Assert;
 import org.junit.Test;
-import ru.spbau.mit.java.client.Client;
-import ru.spbau.mit.java.client.ClientCreator;
-import ru.spbau.mit.java.client.TcpConnectionPerRequestClient;
-import ru.spbau.mit.java.client.TcpConnectionPreservingClient;
+import ru.spbau.mit.java.client.*;
 import ru.spbau.mit.java.client.runner.ArraySupplier;
 import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 import ru.spbau.mit.java.server.BenchServer;
 import ru.spbau.mit.java.server.BenchingError;
-import ru.spbau.mit.java.server.tcp.sock.SingleThreadTcpServer;
-import ru.spbau.mit.java.server.tcp.sock.ThreadPoolTcpServer;
-import ru.spbau.mit.java.server.tcp.sock.ThreadedTcpServer;
+import ru.spbau.mit.java.server.tcp.simple.SingleThreadTcpServer;
+import ru.spbau.mit.java.server.tcp.simple.ThreadPoolTcpServer;
+import ru.spbau.mit.java.server.tcp.simple.ThreadedTcpServer;
+import ru.spbau.mit.java.server.udp.FixedPoolUdpServer;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,23 +22,37 @@ public class ServersTest {
     private static final int serverPort = 5555;
     private static final String host = "localhost";
     private static final int arraySize = 10000;
-    private final static List<Tuple2<Class<? extends BenchServer>, ClientCreator>> serverClasses = Arrays.asList(
-            new Tuple2<>(ThreadedTcpServer.class, new TcpConnectionPreservingClient.Creator(host, serverPort)),
-            new Tuple2<>(ThreadPoolTcpServer.class, new TcpConnectionPreservingClient.Creator(host, serverPort)),
-            new Tuple2<>(SingleThreadTcpServer.class, new TcpConnectionPerRequestClient.Creator(host, serverPort))
-    );
+
+    private interface ServerCreator {
+        BenchServer create() throws IOException;
+    }
+
+    private final static List<Tuple2<ServerCreator, ClientCreator>> serverClasses = Arrays.asList(
+            new Tuple2<>(
+                    () -> new ThreadedTcpServer(serverPort),
+                    new TcpConnectionPreservingClient.Creator(host, serverPort)),
+            new Tuple2<>(
+                    () -> new ThreadPoolTcpServer(serverPort),
+                    new TcpConnectionPreservingClient.Creator(host, serverPort)),
+            new Tuple2<>(
+                    () -> new SingleThreadTcpServer(serverPort),
+                    new TcpConnectionPerRequestClient.Creator(host, serverPort)),
+            new Tuple2<>(
+                    () -> new FixedPoolUdpServer(serverPort, Runtime.getRuntime().availableProcessors() - 1,
+                            arraySize),
+                    new UdpClient.Creator(host, serverPort))
+            );
 
     @Test
     public void testSorted() throws InterruptedException, ReflectiveOperationException, BenchingError, IOException {
-        for (Tuple2<Class<? extends BenchServer>, ClientCreator> serverClass : serverClasses) {
+        for (Tuple2<ServerCreator, ClientCreator> serverClass : serverClasses) {
             testOneServer(serverClass.v1(), serverClass.v2());
         }
     }
 
-    private void testOneServer(Class<? extends BenchServer> cls, ClientCreator clientCreator)
+    private void testOneServer(ServerCreator serverCreator, ClientCreator clientCreator)
             throws ReflectiveOperationException, InterruptedException, IOException, BenchingError {
-        Constructor<? extends BenchServer> ctr = cls.getConstructor(Integer.TYPE);
-        try (BenchServer server = ctr.newInstance(serverPort)) {
+        try (BenchServer server = serverCreator.create()) {
             server.start();
             try (Client client = clientCreator.create()) {
                 ArraySupplier supplier = new ArraySupplier(arraySize);

@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.server.tcp.sock;
+package ru.spbau.mit.java.server.tcp.simple;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -49,14 +49,11 @@ public class SingleThreadTcpServer implements BenchServer {
             int cnt = 0;
             while (!Thread.currentThread().isInterrupted()) {
                 try (Socket sock = serverSocket.accept()) {
-                    log.debug("Got connection: " + cnt);
                     cnt += 1;
                     DataInputStream in = new DataInputStream(sock.getInputStream());
                     DataOutputStream out = new DataOutputStream(sock.getOutputStream());
                     OneRequestTask t = new OneRequestTask(in, out);
-                    log.debug("Serving request...");
                     OneRequestStats data = t.call();
-                    log.debug("OK!");
                     if (data == null) {
                         break;
                     }
