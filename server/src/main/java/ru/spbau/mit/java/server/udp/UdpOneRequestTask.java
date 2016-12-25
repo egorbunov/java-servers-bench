@@ -42,9 +42,8 @@ public class UdpOneRequestTask implements Callable<OneRequestStats> {
                 answerBytes.length,
                 requestPacket.getAddress(),
                 requestPacket.getPort());
-
-        long requestSendTimeNs = System.nanoTime();
         udpSocket.send(answerPacket);
+        long requestSendTimeNs = System.nanoTime();
 
         return new OneRequestStats(
                 requestSendTimeNs - requestRecieveTimeNs,
