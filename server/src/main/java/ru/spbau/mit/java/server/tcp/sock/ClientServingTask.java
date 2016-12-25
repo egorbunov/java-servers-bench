@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.server.tcp;
+package ru.spbau.mit.java.server.tcp.sock;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import lombok.extern.slf4j.Slf4j;

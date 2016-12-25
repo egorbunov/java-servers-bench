@@ -7,9 +7,9 @@ import ru.spbau.mit.java.commons.proto.BenchmarkOpts;
 import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
 import ru.spbau.mit.java.server.BenchServer;
 import ru.spbau.mit.java.server.BenchingError;
-import ru.spbau.mit.java.server.tcp.SingleThreadTcpServer;
-import ru.spbau.mit.java.server.tcp.ThreadPoolTcpServer;
-import ru.spbau.mit.java.server.tcp.ThreadedTcpServer;
+import ru.spbau.mit.java.server.tcp.sock.SingleThreadTcpServer;
+import ru.spbau.mit.java.server.tcp.sock.ThreadPoolTcpServer;
+import ru.spbau.mit.java.server.tcp.sock.ThreadedTcpServer;
 import ru.spbau.mit.java.server.stat.ServerStats;
 
 import java.io.DataInputStream;

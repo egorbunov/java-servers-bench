@@ -1,4 +1,4 @@
-package ru.spbau.mit.java.server.tcp;
+package ru.spbau.mit.java.server.tcp.sock;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.spbau.mit.java.commons.BenchmarkStatusCode;
