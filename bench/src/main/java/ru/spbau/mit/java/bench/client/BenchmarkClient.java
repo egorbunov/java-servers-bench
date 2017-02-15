@@ -2,6 +2,7 @@ package ru.spbau.mit.java.bench.client;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import ru.spbau.mit.java.bench.stat.FinalStat;
 import ru.spbau.mit.java.client.ClientCreator;
@@ -93,10 +94,13 @@ public class BenchmarkClient {
             );
         } catch (UnknownHostException e) {
             log.error("Unknown host! " + e.getMessage());
-            errorCallback.accept("Unknown host! " + e.getMessage());
+            errorCallback.accept("Unknown host! " + ExceptionUtils.getStackTrace(e));
         } catch (IOException e) {
-            log.error("IO Exception: " + e.getMessage() + " ; Go and check server/client logs =)))");
-            errorCallback.accept("IO Exception: " + e.getMessage());
+            log.error("IO Exception: " + ExceptionUtils.getStackTrace(e));
+            errorCallback.accept("IO Exception: " + ExceptionUtils.getStackTrace(e));
+        } catch (Exception e) {
+            log.error("Specific error: " + ExceptionUtils.getStackTrace(e));
+            errorCallback.accept("Error during client execution: " + ExceptionUtils.getStackTrace(e));
         }
         return null;
     }

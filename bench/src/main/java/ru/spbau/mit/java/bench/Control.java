@@ -1,10 +1,10 @@
 package ru.spbau.mit.java.bench;
 
 public enum Control {
-    CLIENT_NUM("Clients number", 1, 2000, 5),
-    REQUSET_NUM("Request number", 1, 10000, 5),
+    CLIENT_NUM("Clients number", 1, 1000, 5),
+    REQUEST_NUM("Request number", 1, 1000, 5),
     DELAY("Response-request gap (ms)", 0, 1000, 5),
-    ARRAY_LEN("Array to sort length", 10, 1000000, 1000);
+    ARRAY_LEN("Array to sort length", 10, 50000, 100);
 
     private final String name;
     private final int min;

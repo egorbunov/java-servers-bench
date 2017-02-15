@@ -108,7 +108,6 @@ public class NioTcpServer implements BenchServer {
                     write(key);
                 }
             }
-//            log.debug("Exiting from NIO server...");
         }
 
         private void accept(SelectionKey key) throws IOException {

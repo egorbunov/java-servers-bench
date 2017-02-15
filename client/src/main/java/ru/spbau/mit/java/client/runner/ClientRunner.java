@@ -52,11 +52,16 @@ public class ClientRunner implements Callable<Double> {
         ArrayList<ClientStat> stats = new ArrayList<>();
         for (Future<ClientStat> f : futures) {
             try {
-                stats.add(f.get());
+                stats.add(f.get(5, TimeUnit.SECONDS));
             } catch (InterruptedException e) {
                 log.error("interrupt during future.get()");
+                throw new RuntimeException("Client interrupt", e);
             } catch (ExecutionException e) {
                 log.error("Client execution exception: " + e.getCause().getMessage());
+                throw new RuntimeException("Client execution exception!", e);
+            } catch (TimeoutException e) {
+                log.error("Can't wait too long for server! Timeout excpetion =)");
+                throw new RuntimeException("Timeout!", e);
             }
         }
         clientsExecutor.shutdown();

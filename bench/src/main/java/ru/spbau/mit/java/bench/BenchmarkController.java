@@ -16,6 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * This class is responsible for running benchmark and notifying it's
+ * listeners for benchmark results
+ */
 @Slf4j
 public class BenchmarkController {
     private BenchmarkSettings settings;
@@ -42,20 +46,20 @@ public class BenchmarkController {
 
             ArrayList<FinalStat> finalStats = new ArrayList<>();
 
-            int goalIter = settings.getStepRepeatCnt() *
-                    (settings.getTo() - settings.getFrom()) / settings.getStep();
+            int oneRepeatStepCnt = (settings.getTo() - settings.getFrom()) / settings.getStep() + 1;
+            int goalRepeats = settings.getStepRepeatCnt() * oneRepeatStepCnt;
             int curProgress = 0;
 
-            // iterating over changing parameter
+
             for (int i = settings.getFrom(); i <= settings.getTo(); i += settings.getStep()) {
                 // constructing options
                 RunnerOpts runnerOpts = constructRunnableOpts(i);
                 List<FinalStat> stepStats = new ArrayList<>();
                 // repeating one parameter calculations for robust statistics
                 for (int j = 0; j < settings.getStepRepeatCnt(); ++j) {
-                    FinalStat x = null;
+                    FinalStat x;
                     try {
-                        x = runOnce(runnerOpts, curProgress++, goalIter);
+                        x = runOnce(runnerOpts, curProgress++, goalRepeats);
                     } catch (BenchmarkError e) {
                         Platform.runLater(() -> listeners.forEach(
                                 l -> l.onBenchmarkError(e.getMessage()))
@@ -125,7 +129,7 @@ public class BenchmarkController {
                         settings.getRunnerOpts().getArrayLen(),
                         settings.getRunnerOpts().getDeltaMs(),
                         settings.getRunnerOpts().getRequestNumber());
-            case REQUSET_NUM:
+            case REQUEST_NUM:
                 return new RunnerOpts(
                         settings.getRunnerOpts().getClientNumber(),
                         settings.getRunnerOpts().getArrayLen(),
@@ -148,6 +152,4 @@ public class BenchmarkController {
                 throw new RuntimeException("What?");
         }
     }
-
-
 }

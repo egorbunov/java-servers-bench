@@ -1,31 +1,37 @@
 package ru.spbau.mit.java.server.udp;
 
 
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import ru.spbau.mit.java.commons.UDPProtocol;
+import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 import ru.spbau.mit.java.server.RequestProcess;
 import ru.spbau.mit.java.server.stat.OneRequestStats;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 
+@Slf4j
 public class UdpOneRequestTask implements Callable<OneRequestStats> {
-    private final DatagramPacket requestPacket;
+    private final IntArrayMsg arrayToSort;
+    private SocketAddress recipientAddr;
     private final DatagramSocket udpSocket;
     private final long requestRecieveTimeNs;
 
     /**
-     * Creates single udp request task
-     *
-     * @param requestPacket packet, which contains request data
-     * @param udpSocket socket with which response will be written
-     * @param requestRecieveTimeNs time stamp of request recieve
+     * Creates task for processing single message
      */
-    public UdpOneRequestTask(DatagramPacket requestPacket,
+    public UdpOneRequestTask(IntArrayMsg arrayToSort,
+                             SocketAddress recipientAddr,
                              DatagramSocket udpSocket,
                              long requestRecieveTimeNs) {
-        this.requestPacket = requestPacket;
+        this.arrayToSort = arrayToSort;
+        this.recipientAddr = recipientAddr;
         this.udpSocket = udpSocket;
         this.requestRecieveTimeNs = requestRecieveTimeNs;
     }
@@ -33,16 +39,18 @@ public class UdpOneRequestTask implements Callable<OneRequestStats> {
     @Override
     public OneRequestStats call() throws IOException {
         long processStart = System.nanoTime();
-        byte[] answerBytes = RequestProcess.process(
-                Arrays.copyOf(requestPacket.getData(), requestPacket.getLength()));
+        val sortedArray = RequestProcess.processArray(arrayToSort);
         long processEnd = System.nanoTime();
 
-        DatagramPacket answerPacket = new DatagramPacket(
-                answerBytes,
-                answerBytes.length,
-                requestPacket.getAddress(),
-                requestPacket.getPort());
-        udpSocket.send(answerPacket);
+        val udpMessages = UDPProtocol.splitArrayToUdpMsgs(sortedArray);
+
+        log.debug("Sending " + udpMessages.size() + " datagrams representing one SORTED array...");
+        for (val msg : udpMessages) {
+            byte[] msgBytes = msg.toByteArray();
+            val packet = new DatagramPacket(msgBytes, msgBytes.length, recipientAddr);
+            udpSocket.send(packet);
+        }
+
         long requestSendTimeNs = System.nanoTime();
 
         return new OneRequestStats(

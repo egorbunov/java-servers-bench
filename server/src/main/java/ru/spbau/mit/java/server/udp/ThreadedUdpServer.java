@@ -1,6 +1,7 @@
 package ru.spbau.mit.java.server.udp;
 
 import lombok.extern.slf4j.Slf4j;
+import ru.spbau.mit.java.commons.UDPProtocol;
 import ru.spbau.mit.java.commons.proto.Protobuf;
 import ru.spbau.mit.java.server.BenchServer;
 import ru.spbau.mit.java.server.BenchingError;
@@ -23,7 +24,6 @@ import java.util.concurrent.Future;
 @Slf4j
 public class ThreadedUdpServer implements BenchServer {
     private final DatagramSocket socket;
-    private final int maxDatagramSize;
     private final ExecutorService receiver;
     private Future<?> receiverFuture;
     private final List<Future<OneRequestStats>> requestsFs;
@@ -31,11 +31,10 @@ public class ThreadedUdpServer implements BenchServer {
 
     /**
      * @param port in case port is zero, server socket is opened at any available port
-     * @param maxDatagramSize maximum number of bytes in message
      */
-    public ThreadedUdpServer(int port, int maxDatagramSize) throws SocketException {
+    public ThreadedUdpServer(int port) throws SocketException {
         socket = new DatagramSocket(port);
-        this.maxDatagramSize = maxDatagramSize;
+        UDPProtocol.setupServerUDPSocket(socket);
         receiver = Executors.newSingleThreadExecutor();
         requestsFs = new ArrayList<>();
         requestExecutors = new ArrayList<>();
@@ -45,10 +44,8 @@ public class ThreadedUdpServer implements BenchServer {
     public void start() {
         receiverFuture = receiver.submit(new UdpReceiverTask(
                 socket,
-                maxDatagramSize,
-                datagramPacket -> {
-                    UdpOneRequestTask task =
-                            new UdpOneRequestTask(datagramPacket, socket, System.nanoTime());
+                t -> {
+                    UdpOneRequestTask task = new UdpOneRequestTask(t.v1, t.v2, socket, System.nanoTime());
                     ExecutorService es = Executors.newSingleThreadExecutor();
                     requestsFs.add(es.submit(task));
                     requestExecutors.add(es);
@@ -82,4 +79,3 @@ public class ThreadedUdpServer implements BenchServer {
         return socket.getLocalPort();
     }
 }
-

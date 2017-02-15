@@ -2,6 +2,7 @@ package ru.spbau.mit.java.server.tcp.simple;
 
 import lombok.extern.slf4j.Slf4j;
 import ru.spbau.mit.java.commons.BenchmarkStatusCode;
+import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 import ru.spbau.mit.java.server.RequestProcess;
 import ru.spbau.mit.java.server.stat.OneRequestStats;
 
@@ -34,11 +35,15 @@ public class OneRequestTask implements Callable<OneRequestStats> {
         byte[] msg = new byte[msgLen];
         long startRequest = System.nanoTime();
         in.readFully(msg);
+        IntArrayMsg arrToSort = IntArrayMsg.parseFrom(msg);
+
         long startProc = System.nanoTime();
-        byte[] answerBytes = RequestProcess.process(msg);
+        IntArrayMsg sorted = RequestProcess.processArray(arrToSort);
         long endProc = System.nanoTime();
-        out.writeInt(answerBytes.length);
-        out.write(answerBytes);
+
+        byte[] ans = sorted.toByteArray();
+        out.writeInt(ans.length);
+        out.write(ans);
         long endRequest = System.nanoTime();
         return new OneRequestStats(
                 endRequest - startRequest,

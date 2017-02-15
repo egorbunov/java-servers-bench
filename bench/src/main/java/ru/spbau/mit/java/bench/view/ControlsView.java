@@ -13,7 +13,6 @@ import ru.spbau.mit.java.bench.*;
 import ru.spbau.mit.java.bench.stat.BenchmarkResults;
 import ru.spbau.mit.java.client.runner.RunnerOpts;
 import ru.spbau.mit.java.commons.ServerArch;
-import ru.spbau.mit.java.commons.ServerArch;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -125,7 +124,7 @@ public class ControlsView implements BenchmarkControllerListener {
                             (int) paramSliders.get(ru.spbau.mit.java.bench.Control.CLIENT_NUM).getValue(),
                             (int) paramSliders.get(ru.spbau.mit.java.bench.Control.ARRAY_LEN).getValue(),
                             (int) paramSliders.get(ru.spbau.mit.java.bench.Control.DELAY).getValue(),
-                            (int) paramSliders.get(ru.spbau.mit.java.bench.Control.REQUSET_NUM).getValue()
+                            (int) paramSliders.get(ru.spbau.mit.java.bench.Control.REQUEST_NUM).getValue()
                     ),
                     serverRunnerHost.getText(),
                     port,

@@ -73,6 +73,7 @@ class OneNioClientState {
 
     void read(SelectionKey key) throws IOException {
         if (state == State.READING_NOT_STARTED) {
+            // start reading array
             receiveTime = System.nanoTime();
             state = State.READING_HEADER;
             return;
@@ -162,7 +163,7 @@ class OneNioClientState {
             key.cancel();
             return false;
         }
-        return !buffer.hasRemaining();
+        return !requestHeader.hasRemaining();
     }
 
     private class RequestExecutionTask implements Callable<Void> {

@@ -18,3 +18,15 @@ message ServerStatsMsg {
     double avReceiveSendGapNs = 1;
     double avRequestProcNs = 2;
 }
+
+message UDPMessage {
+    enum Type {
+        PART = 0;
+        ACK = 1;
+    }
+
+    Type msgType = 1;
+    int32 totalPartNum = 2;
+    int32 partIndex = 3; // in case of ACK this means the last got packet index
+    bytes arrayBytes = 4;
+}

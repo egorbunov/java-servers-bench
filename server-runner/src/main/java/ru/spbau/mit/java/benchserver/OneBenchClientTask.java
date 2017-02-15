@@ -125,11 +125,10 @@ public class OneBenchClientTask implements Runnable {
                 return new SingleThreadTcpServer(0);
             }
             case UDP_THREAD_POOL: {
-                return new FixedPoolUdpServer(0, Runtime.getRuntime().availableProcessors(),
-                        Protobuf.predictArrayMsgSize(opts.getMaxArraySize()));
+                return new FixedPoolUdpServer(0, Runtime.getRuntime().availableProcessors());
             }
             case UDP_THREAD_PER_REQUEST: {
-                return new ThreadedUdpServer(0, Protobuf.predictArrayMsgSize(opts.getMaxArraySize()));
+                return new ThreadedUdpServer(0);
             }
             case TCP_NON_BLOCKING: {
                 return new NioTcpServer(0, Runtime.getRuntime().availableProcessors());
