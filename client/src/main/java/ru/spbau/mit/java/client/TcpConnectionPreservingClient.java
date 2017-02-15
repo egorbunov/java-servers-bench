@@ -1,5 +1,6 @@
 package ru.spbau.mit.java.client;
 
+import lombok.extern.slf4j.Slf4j;
 import ru.spbau.mit.java.commons.BenchmarkStatusCode;
 import ru.spbau.mit.java.commons.proto.IntArrayMsg;
 
@@ -12,6 +13,7 @@ import java.net.Socket;
  * Client, which uses tries to establish tcp connection
  * with server
  */
+@Slf4j
 public class TcpConnectionPreservingClient implements Client {
     private final Socket connection;
     private final DataOutputStream out;
@@ -44,7 +46,6 @@ public class TcpConnectionPreservingClient implements Client {
     @Override
     public IntArrayMsg makeBlockingRequest(IntArrayMsg toSort) throws IOException {
         Request.writeRequest(toSort, out);
-
         int len = in.readInt();
         byte[] answer = new byte[len];
         in.readFully(answer);

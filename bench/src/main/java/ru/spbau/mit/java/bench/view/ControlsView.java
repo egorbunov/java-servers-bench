@@ -88,7 +88,7 @@ public class ControlsView implements BenchmarkControllerListener {
 
     private void addVariableControls(GridBuilder builder) {
         for (ru.spbau.mit.java.bench.Control c : ru.spbau.mit.java.bench.Control.values()) {
-            Slider slider = new Slider(c.getMin(), c.getMax(), c.getMin());
+            Slider slider = new Slider(c.getMin(), c.getMax(), c.getDefaultVal());
             setupSliderForControl(c, slider);
             TextField tf = createEditableIntField(slider);
             paramTextFields.put(c, tf);

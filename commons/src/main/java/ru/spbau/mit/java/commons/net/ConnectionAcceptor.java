@@ -28,7 +28,14 @@ public class ConnectionAcceptor implements Runnable {
                 clientSock = serverSocket.accept();
                 acceptAction.accepted(clientSock);
             } catch (IOException e) {
-                log.error("Error accepting connection: " + e.getMessage());
+                if (Thread.currentThread().isInterrupted()) {
+                    log.info("Connection acceptor was interrupted...");
+                }
+                if (serverSocket.isClosed()) {
+                    log.info("Socket was closed!");
+                } else {
+                    log.error("Error accepting connection: " + e.getMessage());
+                }
             }
         }
         log.debug("Exiting connection acceptor...");

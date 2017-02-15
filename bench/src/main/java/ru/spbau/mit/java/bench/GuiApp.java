@@ -93,7 +93,6 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
         requestProcAvTimeTab.setDisable(true);
         avClientLifePlotTab.setDisable(true);
         resultsTableTab.setDisable(true);
-
     }
 
     @Override

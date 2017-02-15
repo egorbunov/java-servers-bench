@@ -2,6 +2,7 @@ package ru.spbau.mit.java.server.tcp.nonblocking;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import lombok.extern.slf4j.Slf4j;
+import ru.spbau.mit.java.commons.BenchmarkStatusCode;
 import ru.spbau.mit.java.server.RequestProcess;
 import ru.spbau.mit.java.server.stat.OneRequestStats;
 
@@ -22,17 +23,23 @@ import java.util.concurrent.Future;
  */
 
 @Slf4j
-class OneRequestState {
+class OneNioClientState {
     private ExecutorService requestExecutor;
+    private SocketChannel channel;
+
+    public SocketChannel getChannel() {
+        return channel;
+    }
 
     enum State {
-        WAITING_FOR_SERVING,
+        READING_NOT_STARTED,
         READING_HEADER,
         READING_REQUEST,
         EXECUTING,
         FINISHED_EXECUTION,
         WRITING_RESPONSE,
-        FINISHED
+        FINISHED_ONE_REQUEST,
+        CLIENT_DISCONNECT
     }
 
     private volatile State state;
@@ -45,19 +52,30 @@ class OneRequestState {
     private Future requestProcFuture;
 
 
-    OneRequestState(ExecutorService requestExecutor) {
+    OneNioClientState(ExecutorService requestExecutor, SocketChannel channel) {
         this.requestExecutor = requestExecutor;
-        state = State.WAITING_FOR_SERVING;
+        this.channel = channel;
         requestHeader = ByteBuffer.allocate(Integer.BYTES);
+        reset();
+    }
+
+    void reset() {
+        state = (state == State.CLIENT_DISCONNECT) ? State.CLIENT_DISCONNECT : State.READING_NOT_STARTED;
+        requestHeader.clear();
         request = null;
         response = null;
         requestProcFuture = null;
     }
 
+    boolean isDisconnected() {
+        return state == State.CLIENT_DISCONNECT;
+    }
+
     void read(SelectionKey key) throws IOException {
-        if (state == State.WAITING_FOR_SERVING) {
+        if (state == State.READING_NOT_STARTED) {
             receiveTime = System.nanoTime();
             state = State.READING_HEADER;
+            return;
         }
 
         if (state == State.READING_HEADER) {
@@ -66,8 +84,17 @@ class OneRequestState {
             }
 
             requestHeader.flip();
-            int msgSize = requestHeader.getInt();
-            request = ByteBuffer.allocate(msgSize);
+            int msgSizeOrDisconnect = requestHeader.getInt();
+            if (msgSizeOrDisconnect == BenchmarkStatusCode.DISCONNECT) {
+                log.debug("Got DISCONNECT signal from client");
+                state = State.CLIENT_DISCONNECT;
+                return;
+            } else {
+                log.debug("Header contains message len = " + msgSizeOrDisconnect);
+            }
+
+            request = ByteBuffer.allocate(msgSizeOrDisconnect);
+            log.debug("Allocated buffer: pos = " + request.position() + " ; lim = " + request.limit());
             state = State.READING_REQUEST;
         } else if (state == State.READING_REQUEST) {
             if (!tryRead(key, request)) {
@@ -75,6 +102,10 @@ class OneRequestState {
             }
 
             request.flip();
+
+            log.debug("Request buf pos = " + request.position());
+            log.debug("Request buf lim = " + request.limit());
+
             state = State.EXECUTING;
             requestProcFuture = requestExecutor.submit(new RequestExecutionTask());
         }
@@ -113,7 +144,7 @@ class OneRequestState {
         }
 
         if (!response[0].hasRemaining() && !response[1].hasRemaining()) {
-            state = State.FINISHED;
+            state = State.FINISHED_ONE_REQUEST;
             long sendTime = System.nanoTime();
             return Optional.of(new OneRequestStats(
                     sendTime - receiveTime,
@@ -131,7 +162,7 @@ class OneRequestState {
             key.cancel();
             return false;
         }
-        return !requestHeader.hasRemaining();
+        return !buffer.hasRemaining();
     }
 
     private class RequestExecutionTask implements Callable<Void> {

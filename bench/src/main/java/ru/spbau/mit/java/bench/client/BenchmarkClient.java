@@ -95,7 +95,7 @@ public class BenchmarkClient {
             log.error("Unknown host! " + e.getMessage());
             errorCallback.accept("Unknown host! " + e.getMessage());
         } catch (IOException e) {
-            log.error("IO Exception: " + e.getMessage());
+            log.error("IO Exception: " + e.getMessage() + " ; Go and check server/client logs =)))");
             errorCallback.accept("IO Exception: " + e.getMessage());
         }
         return null;

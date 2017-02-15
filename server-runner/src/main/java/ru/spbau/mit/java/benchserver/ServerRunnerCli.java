@@ -1,13 +1,19 @@
 package ru.spbau.mit.java.benchserver;
 
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+@Slf4j
 public class ServerRunnerCli {
     public static void main(String[] args) throws IOException {
-        ServerRunner server = new ServerRunner(6666);
+        if (args.length < 1) {
+            System.out.println("USAGE: java -jar server.jar [PORT]");
+        }
+        ServerRunner server = new ServerRunner(Integer.valueOf(args[0]));
 
         server.start();
 

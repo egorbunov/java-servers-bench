@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class ServersTest {
     private static final int serverPort = 5555;
     private static final String host = "localhost";
-    private static final int arraySize = 10000;
+    private static final int arraySize = 1000000;
 
     private interface ServerCreator {
         BenchServer create() throws IOException;

@@ -27,13 +27,13 @@ public class NioTcpServer implements BenchServer {
     private final Selector selector;
     private final ServerSocketChannel socket;
     private final List<OneRequestStats> results;
-    private final List<SocketChannel> clientChannels;
+    private final Set<SocketChannel> clientChannels;
 
     public NioTcpServer(int port, int threadNum) throws IOException {
         this.server = Executors.newSingleThreadExecutor();
         this.requestProcessingService = Executors.newFixedThreadPool(threadNum);
         this.results = new ArrayList<>();
-        this.clientChannels = new ArrayList<>();
+        this.clientChannels = new HashSet<>();
 
         selector = Selector.open();
         try {
@@ -52,11 +52,13 @@ public class NioTcpServer implements BenchServer {
 
     @Override
     public void start() {
+        log.debug("Starting NIO server in separate thread...");
         serverFuture = server.submit(new ServerTask());
     }
 
     @Override
     public ServerStats stop() throws IOException {
+        log.debug("Stopping NIO server...");
         server.shutdownNow();
         serverFuture.cancel(true);
         selector.close();
@@ -80,7 +82,11 @@ public class NioTcpServer implements BenchServer {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     serve();
-                } catch (IOException e) {
+                } catch (Exception e) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        log.info("NIO server thread interrupted.");
+                        return;
+                    }
                     log.error("Error during serving: " + e);
                 }
             }
@@ -102,28 +108,38 @@ public class NioTcpServer implements BenchServer {
                     write(key);
                 }
             }
+//            log.debug("Exiting from NIO server...");
         }
 
         private void accept(SelectionKey key) throws IOException {
             SocketChannel clientSocket = ((ServerSocketChannel) key.channel()).accept();
+            log.debug("Client accepted!");
             clientSocket.configureBlocking(false);
             clientSocket.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE,
-                    new OneRequestState(requestProcessingService));
+                    new OneNioClientState(requestProcessingService, clientSocket));
             clientChannels.add(clientSocket);
         }
 
         private void read(SelectionKey key) throws IOException {
-            OneRequestState oneRequestState = (OneRequestState) key.attachment();
-            oneRequestState.read(key);
+            OneNioClientState clientState = (OneNioClientState) key.attachment();
+            clientState.read(key);
+            if (clientState.isDisconnected()) {
+                log.debug("Cancelling key and closing channel...");
+                key.cancel();
+                SocketChannel sc = clientState.getChannel();
+                clientChannels.remove(sc);
+                sc.close();
+            }
         }
 
         private void write(SelectionKey key) throws IOException {
-            OneRequestState oneRequestState = (OneRequestState) key.attachment();
-            Optional<OneRequestStats> result = oneRequestState.write(key);
+            OneNioClientState clientState = (OneNioClientState) key.attachment();
+            Optional<OneRequestStats> result = clientState.write(key);
             if (result.isPresent()) {
                 OneRequestStats stats = result.get();
                 results.add(stats);
-                key.attach(new OneRequestState(requestProcessingService));
+                log.debug("Resetting client state...");
+                clientState.reset();
             }
         }
     }
