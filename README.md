@@ -34,7 +34,7 @@ Example usage:
 
 ```bash
 # TERMINAL 1
-$ java -server -jar -Dlogback.configurationFile=logback-info.xml build/jars/server-runner-0.1.jar
+$ java -server -jar -Dlogback.configurationFile=logback-info.xml build/jars/server-runner-0.1.jar 6666
 
 # TERMINAL 2
 $ java -jar -Dlogback.configurationFile=logback-info.xml build/jars/bench-0.1.jar
