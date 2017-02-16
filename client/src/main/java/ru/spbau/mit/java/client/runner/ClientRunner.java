@@ -55,13 +55,10 @@ public class ClientRunner implements Callable<Double> {
                 stats.add(f.get(30, TimeUnit.SECONDS));
             } catch (InterruptedException e) {
                 log.error("interrupt during future.get()");
-                throw new RuntimeException("Client interrupt", e);
             } catch (ExecutionException e) {
                 log.error("Client execution exception: " + e.getCause().getMessage());
-                throw new RuntimeException("Client execution exception!", e);
             } catch (TimeoutException e) {
                 log.error("Can't wait too long for server! Timeout excpetion =)");
-                throw new RuntimeException("Timeout!", e);
             }
         }
         clientsExecutor.shutdown();
@@ -80,17 +77,20 @@ public class ClientRunner implements Callable<Double> {
         public ClientStat call() throws IOException {
             try (Client client = clientCreator.create()) {
                 long start = System.currentTimeMillis();
+                int cnt = 0;
                 for (int i = 0; i < opts.getRequestNumber(); ++i) {
                     client.makeBlockingRequest(arraySupplier.get());
+                    cnt += 1;
+                    log.debug("Requests got: " + cnt);
                     Thread.sleep(opts.getDeltaMs());
                 }
                 long end = System.currentTimeMillis();
                 return new ClientStat(end - start);
             } catch (IOException e) {
-                log.error("IO exception ocurred: " + e.getMessage());
+                log.error("IO exception occurred: " + e);
                 throw new IOError(e);
             } catch (InterruptedException e) {
-                log.error("Interrupt during sleep: " + e.getMessage());
+                log.error("Interrupt during sleep: " + e);
                 throw new RuntimeException(e);
             }
         }

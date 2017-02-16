@@ -102,10 +102,12 @@ class OneNioClientState {
                 return;
             }
 
-            request.flip();
-
             log.debug("Request buf pos = " + request.position());
             log.debug("Request buf lim = " + request.limit());
+            log.debug("Request buf remaining = " + request.remaining());
+
+            request.flip();
+
 
             state = State.EXECUTING;
             requestProcFuture = requestExecutor.submit(new RequestExecutionTask());
@@ -163,7 +165,7 @@ class OneNioClientState {
             key.cancel();
             return false;
         }
-        return !requestHeader.hasRemaining();
+        return !buffer.hasRemaining();
     }
 
     private class RequestExecutionTask implements Callable<Void> {
