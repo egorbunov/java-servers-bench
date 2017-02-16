@@ -1,11 +1,10 @@
 BenchmarkSettings(
     runnerOpts=RunnerOpts(
-        clientNumber=5,
-        arrayLen=500,
-        deltaMs=5,
+        clientNumber=4,
+        arrayLen=1000,
         requestNumber=100
     ),
     benchServerHost=192.168.1.185,
     benchServerPort=6666,
-    whatToChage=Clients number, from=1, to=30, step=2, stepRepeatCnt=1
+    whatToChage=Response-request gap (ms), from=0, to=100, step=10, stepRepeatCnt=1
 )

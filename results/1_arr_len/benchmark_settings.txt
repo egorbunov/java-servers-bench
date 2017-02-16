@@ -7,6 +7,5 @@ BenchmarkSettings(
     ),
     benchServerHost=192.168.1.185,
     benchServerPort=6666,
-    serverArch=TCP: Thread per client,
     whatToChage=Array to sort length, from=100, to=5000, step=100, stepRepeatCnt=5
 )

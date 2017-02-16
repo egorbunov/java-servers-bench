@@ -32,3 +32,35 @@
 ![Sort time chart](2_client_num/sort_time.png)
 ![Client lifespan](2_client_num/client_lifespan.png)
 
+## Variable request number
+
+### Benchmark parameters:
+
+* Receive-Send Delay = `5`
+* Client Number = `4`
+* Array length = `500`
+* Per-client Request Number, variable from `10` to `150` with step = `10`
+* Number of repeats = `5`
+
+### Charts
+
+![Receive-send gap chart](3_request_num/receive_send_time.png)
+![Sort time chart](3_request_num/sort_time.png)
+![Client lifespan](3_request_num/client_lifespan.png)
+
+
+## Variable receive-send delay
+
+### Benchmark parameters:
+
+* Client Number = `4`
+* Array length = `1000`
+* Per-client Request Number = `100`
+* Receive-Send Delay, variable from = `0ms`ms to `100ms` with step = `10`
+* Number of repeats = `1`
+
+### Charts
+
+![Receive-send gap chart](4_send_rcv_gap/receive_send_time.png)
+![Sort time chart](4_send_rcv_gap/sort_time.png)
+![Client lifespan](4_send_rcv_gap/client_lifespan.png)
