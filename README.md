@@ -53,3 +53,7 @@ So:
 * Input parameter 
 * Press bench button
 * Go to, for example, results table tab and do right click on the table to save it
+
+## Results
+
+See `results` directory
