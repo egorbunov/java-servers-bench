@@ -63,7 +63,9 @@ public class BenchmarkClient {
         Socket socket = new Socket();
         try {
             statusCallback.accept("Status: connecting to server...");
+            socket.setSoTimeout(3000);
             socket.connect(new InetSocketAddress(benchHost, benchServerRunnerPort));
+            socket.setSoTimeout(0);
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             DataInputStream in = new DataInputStream(socket.getInputStream());
 

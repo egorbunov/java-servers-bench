@@ -6,6 +6,9 @@ import ru.spbau.mit.java.bench.Control;
 
 import java.util.List;
 
+/**
+ * Benchmarking results
+ */
 @Data
 public class BenchmarkResults {
     private final Control whatChanges;

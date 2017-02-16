@@ -40,15 +40,24 @@ public class BenchmarkController {
         this.statusListener = statusListener;
     }
 
+    /**
+     * Tells all listeners to clear results, if they can do it =)
+     */
     public void clearResults() {
         listeners.forEach(BenchmarkControllerListener::onClearResults);
     }
 
+    /**
+     * Starts BenchmarkClient's in a separate thread.
+     */
     public void startBenchmark() {
         benchmarkThread = new Thread(new BenchmarkTask());
         benchmarkThread.start();
     }
 
+    /**
+     * Tries to interrupt running benchmark
+     */
     public void interruptBenchmark() {
         benchmarkThread.interrupt();
     }

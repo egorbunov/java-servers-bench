@@ -23,9 +23,7 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * Created by: Egor Gorbunov
- * Date: 12/21/16
- * Email: egor-mailbox@ya.com
+ * View with just one line chart
  */
 @Slf4j
 public class BenchmarkResultChartView implements BenchmarkControllerListener {

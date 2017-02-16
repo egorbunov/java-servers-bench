@@ -1,5 +1,8 @@
 package ru.spbau.mit.java.bench;
 
+/**
+ * Available benchmark parameters
+ */
 public enum Control {
     CLIENT_NUM("Clients number", 1, 1000, 5),
     REQUEST_NUM("Request number", 1, 1000, 5),
