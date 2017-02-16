@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 public class BenchmarkController {
     private BenchmarkSettings settings;
     private final List<BenchmarkControllerListener> listeners = new ArrayList<>();
+    private Thread benchmarkThread;
 
     public void setSettings(BenchmarkSettings settings) {
         this.settings = settings;
@@ -33,9 +34,17 @@ public class BenchmarkController {
         listeners.add(listener);
     }
 
+    public void clearResults() {
+        listeners.forEach(BenchmarkControllerListener::onClearResults);
+    }
+
     public void startBenchmark() {
-        Thread t = new Thread(new BenchmarkTask());
-        t.start();
+        benchmarkThread = new Thread(new BenchmarkTask());
+        benchmarkThread.start();
+    }
+
+    public void interruptBenchmark() {
+        benchmarkThread.interrupt();
     }
 
     private class BenchmarkTask implements Runnable {
@@ -52,6 +61,9 @@ public class BenchmarkController {
 
 
             for (int i = settings.getFrom(); i <= settings.getTo(); i += settings.getStep()) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
                 // constructing options
                 RunnerOpts runnerOpts = constructRunnableOpts(i);
                 List<FinalStat> stepStats = new ArrayList<>();

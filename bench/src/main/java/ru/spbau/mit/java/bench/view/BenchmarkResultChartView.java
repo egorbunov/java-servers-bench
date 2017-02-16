@@ -58,6 +58,9 @@ public class BenchmarkResultChartView implements BenchmarkControllerListener {
         saveItem.setOnAction(event -> {
             WritableImage image = lineChart.snapshot(new SnapshotParameters(), null);
             File file = fileChooser.showSaveDialog(parent);
+            if (file == null) {
+                return;
+            }
             try {
                 ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
             } catch (IOException e) {
@@ -124,4 +127,9 @@ public class BenchmarkResultChartView implements BenchmarkControllerListener {
 
     @Override
     public void onBenchmarkError(String s) {}
+
+    @Override
+    public void onClearResults() {
+        lineChart.getData().clear();
+    }
 }

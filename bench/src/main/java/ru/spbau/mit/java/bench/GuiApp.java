@@ -67,6 +67,7 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
         bc.addListener(tableView);
 
         controlsTab = new Tab("Control", controlsView.getView());
+        controlsTab.setClosable(false);
         sendReceiveGapTab = new Tab("Receive req. send resp. gap plot", sendReceiveGapPlot.getView());
         requestProcAvTimeTab = new Tab("Request proc. time plot", requestProcTimePlot.getView());
         avClientLifePlotTab = new Tab("Client lifespan plot", clientLifetimePlot.getView());
@@ -83,7 +84,7 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
         avClientLifePlotTab.setClosable(false);
         resultsTableTab.setDisable(true);
         resultsTableTab.setClosable(false);
-        primaryStage.setScene(new Scene(root, 650, 650));
+        primaryStage.setScene(new Scene(root, 650, 700));
         primaryStage.show();
     }
 
@@ -112,5 +113,10 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
         requestProcAvTimeTab.setDisable(true);
         avClientLifePlotTab.setDisable(true);
         resultsTableTab.setDisable(true);
+    }
+
+    @Override
+    public void onClearResults() {
+
     }
 }

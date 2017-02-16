@@ -146,4 +146,10 @@ public class BenchmarkResultTableView implements BenchmarkControllerListener {
 
     @Override
     public void onBenchmarkError(String s) {}
+
+    @Override
+    public void onClearResults() {
+        table.getColumns().clear();
+        tableLabel.setText("Bench data");
+    }
 }

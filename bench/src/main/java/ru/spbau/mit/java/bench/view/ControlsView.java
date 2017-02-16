@@ -34,6 +34,7 @@ public class ControlsView implements BenchmarkControllerListener {
     private Button benchButton;
     private ProgressBar progressBar;
     private Slider repeatStepCnt;
+    private Button interruptBench;
 
     private final GridPane view;
     private final BenchmarkController benchmarkController;
@@ -53,7 +54,7 @@ public class ControlsView implements BenchmarkControllerListener {
         controlsGridBuilder.row().hSep();
         addRepeatCntRow(controlsGridBuilder);
         controlsGridBuilder.row().hSep();
-        addBenchButton(controlsGridBuilder);
+        addBenchmarkStageControls(controlsGridBuilder);
 
         view = controlsGridBuilder.build();
     }
@@ -104,7 +105,7 @@ public class ControlsView implements BenchmarkControllerListener {
                 .row().col(new Label("Benchmark server port: ")).col(serverRunnerPort);
     }
 
-    private void addBenchButton(GridBuilder builder) {
+    private void addBenchmarkStageControls(GridBuilder builder) {
         benchButton = new Button();
         benchButton.setText("Do benchmark!");
         benchButton.setOnAction(event -> {
@@ -140,10 +141,24 @@ public class ControlsView implements BenchmarkControllerListener {
             benchmarkController.startBenchmark();
         });
 
+        Label progressLabel = new Label("Progress: ");
+
         progressBar = new ProgressBar();
         progressBar.setMinWidth(400);
         progressBar.setVisible(false);
-        builder.row().col(benchButton).col(progressBar, 2, 1);
+
+        interruptBench = new Button();
+        interruptBench.setText("Cancel");
+        interruptBench.setDisable(true);
+
+        Button clearResults = new Button();
+        clearResults.setText("Clear results tabs");
+        clearResults.setOnAction(event -> benchmarkController.clearResults());
+
+        builder.row()
+                .col(benchButton).col(interruptBench).col(clearResults);
+        builder.row()
+                .col(progressLabel).col(progressBar, 3, 1);
     }
 
     private void addRangeParameterControls(GridBuilder builder) {
@@ -244,11 +259,13 @@ public class ControlsView implements BenchmarkControllerListener {
     public void onBenchmarkStarted(BenchmarkSettings settings) {
         benchButton.setDisable(true);
         progressBar.setVisible(true);
+        interruptBench.setDisable(false);
     }
 
     @Override
     public void onBenchmarkFinished(BenchmarkResults results) {
         benchButton.setDisable(false);
+        interruptBench.setDisable(true);
         progressBar.setVisible(false);
     }
 
@@ -262,5 +279,10 @@ public class ControlsView implements BenchmarkControllerListener {
         Commons.showError(s);
         progressBar.setVisible(false);
         benchButton.setDisable(false);
+        interruptBench.setDisable(true);
+    }
+
+    @Override
+    public void onClearResults() {
     }
 }

@@ -7,4 +7,5 @@ public interface BenchmarkControllerListener {
     void onBenchmarkFinished(BenchmarkResults results);
     void onBenchmarkProgressUpdate(int progress, int goal);
     void onBenchmarkError(String s);
+    void onClearResults();
 }

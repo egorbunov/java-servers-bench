@@ -67,7 +67,7 @@ public class UDPProtocol {
         socket.setSendBufferSize(1000000);
         log.debug("UDP Receive buf (client) " + socket.getReceiveBufferSize());
         log.debug("UDP Send buf (client) " + socket.getSendBufferSize());
-        socket.setSoTimeout(10000);
+        socket.setSoTimeout(30000);
     }
 
     public static void setupServerUDPSocket(DatagramSocket socket) throws SocketException {
@@ -75,6 +75,6 @@ public class UDPProtocol {
         socket.setSendBufferSize(1000000);
         log.debug("UDP Receive buf (server) " + socket.getReceiveBufferSize());
         log.debug("UDP Send buf (server) " + socket.getSendBufferSize());
-        socket.setSoTimeout(10000);
+        socket.setSoTimeout(30000);
     }
 }
