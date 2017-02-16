@@ -22,13 +22,13 @@ Example usage:
 
 ```bash
 # TERMINAL 1
-$ cd build/jars
-$ java -server -jar server-runner-0.1.jar
+$ java -server -jar -Dlogback.configurationFile=logback-info.xml build/jars/server-runner-0.1.jar
 
 # TERMINAL 2
-$ cd build/jars
-$ java -jar bench-0.1.jar 
+$ java -jar -Dlogback.configurationFile=logback-info.xml build/jars/bench-0.1.jar
 ```
+
+We pass log config. due to zipped in jar config will produce debug logs also =)
 
 ## GUI (`bench`)
 
