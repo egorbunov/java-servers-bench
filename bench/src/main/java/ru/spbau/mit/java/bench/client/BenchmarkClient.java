@@ -19,6 +19,7 @@ import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.function.Consumer;
@@ -39,12 +40,14 @@ public class BenchmarkClient {
     private final int benchServerRunnerPort;
     private final ServerArch serverArch;
     private final Consumer<String> errorCallback;
+    private Consumer<String> statusCallback;
 
     public BenchmarkClient(RunnerOpts runnerOpts,
                            String benchHost,
                            int benchServerRunnerPort,
                            ServerArch serverArch,
-                           Consumer<String> errorCallback) {
+                           Consumer<String> errorCallback,
+                           Consumer<String> statusCallback) {
 
         this.runnerOpts = runnerOpts;
         this.benchHost = benchHost;
@@ -52,17 +55,24 @@ public class BenchmarkClient {
         // because sometimes server socket not freed quickly
         this.serverArch = serverArch;
         this.errorCallback = errorCallback;
+        this.statusCallback = statusCallback;
     }
 
 
     public FinalStat run() throws BenchmarkError {
-        try (Socket socket = new Socket(benchHost, benchServerRunnerPort)) {
+        Socket socket = new Socket();
+        try {
+            statusCallback.accept("Status: connecting to server...");
+            socket.connect(new InetSocketAddress(benchHost, benchServerRunnerPort));
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             DataInputStream in = new DataInputStream(socket.getInputStream());
 
+            statusCallback.accept("Status: starting benchmark...");
             sendBenchmarkOptions(out);
             int benchPort = waitBenchServerReady(in);
             log.debug("Bench server started at port: " + benchPort);
+
+            statusCallback.accept("Status: bench. server started; Starting clients...");
 
             ClientCreator clientCreator = createClientFactory(benchPort);
 
@@ -78,6 +88,7 @@ public class BenchmarkClient {
 
             int ansLen = in.readInt();
             if (ansLen == BenchmarkStatusCode.BENCH_FAILED) {
+                statusCallback.accept("Status: benchmark failed =(");
                 log.error("benchmark failed (see bench runner logs)");
                 throw new BenchmarkError("Bench. server ERROR: benchmark failed");
             }

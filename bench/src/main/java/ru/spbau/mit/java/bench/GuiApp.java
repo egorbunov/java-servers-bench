@@ -2,14 +2,15 @@ package ru.spbau.mit.java.bench;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import ru.spbau.mit.java.bench.stat.BenchmarkResults;
 import ru.spbau.mit.java.bench.view.BenchmarkResultChartView;
 import ru.spbau.mit.java.bench.view.BenchmarkResultTableView;
 import ru.spbau.mit.java.bench.view.ControlsView;
 
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class GuiApp extends Application implements BenchmarkControllerListener {
@@ -22,7 +23,7 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
     private Tab requestProcAvTimeTab;
     private Tab avClientLifePlotTab;
     private Tab resultsTableTab;
-
+    private Label statusBar;
 
     @Override
     public void start(Stage primaryStage) {
@@ -31,9 +32,17 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
 
     private void setup(Stage primaryStage) {
         primaryStage.setTitle("Server benchmark gui");
+        statusBar = new Label();
+
 
         BenchmarkController bc = new BenchmarkController();
         ControlsView controlsView = new ControlsView(bc);
+        ScrollPane scrollPane = new ScrollPane(controlsView.getView());
+        BorderPane controlPane = new BorderPane(scrollPane);
+        controlPane.setBottom(statusBar);
+
+        bc.setStatusListener(s -> statusBar.setText(s));
+
         BenchmarkResultChartView sendReceiveGapPlot = new BenchmarkResultChartView(
                 primaryStage,
                 results -> results.getData().stream().map(x -> x.getAvReceiveSendGapNs() / 1e6)
@@ -66,7 +75,7 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
         bc.addListener(this);
         bc.addListener(tableView);
 
-        controlsTab = new Tab("Control", controlsView.getView());
+        controlsTab = new Tab("Control", controlPane);
         controlsTab.setClosable(false);
         sendReceiveGapTab = new Tab("Receive req. send resp. gap plot", sendReceiveGapPlot.getView());
         requestProcAvTimeTab = new Tab("Request proc. time plot", requestProcTimePlot.getView());
@@ -84,12 +93,13 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
         avClientLifePlotTab.setClosable(false);
         resultsTableTab.setDisable(true);
         resultsTableTab.setClosable(false);
-        primaryStage.setScene(new Scene(root, 650, 700));
+        primaryStage.setScene(new Scene(root, 700, 600));
         primaryStage.show();
     }
 
     @Override
     public void onBenchmarkStarted(BenchmarkSettings settings) {
+        statusBar.setText("Status: benchmark started...");
         sendReceiveGapTab.setDisable(true);
         requestProcAvTimeTab.setDisable(true);
         avClientLifePlotTab.setDisable(true);
@@ -98,6 +108,7 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
 
     @Override
     public void onBenchmarkFinished(BenchmarkResults results) {
+        statusBar.setText("Status: benchmark finished!");
         sendReceiveGapTab.setDisable(false);
         requestProcAvTimeTab.setDisable(false);
         avClientLifePlotTab.setDisable(false);
@@ -109,6 +120,7 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
 
     @Override
     public void onBenchmarkError(String s) {
+        statusBar.setText("Error occurred: " + s);
         sendReceiveGapTab.setDisable(true);
         requestProcAvTimeTab.setDisable(true);
         avClientLifePlotTab.setDisable(true);
@@ -117,6 +129,6 @@ public class GuiApp extends Application implements BenchmarkControllerListener {
 
     @Override
     public void onClearResults() {
-
+        statusBar.setText("Status: results cleared");
     }
 }

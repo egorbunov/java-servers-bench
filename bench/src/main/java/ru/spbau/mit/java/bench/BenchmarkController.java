@@ -14,6 +14,7 @@ import ru.spbau.mit.java.client.runner.RunnerOpts;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -25,6 +26,7 @@ public class BenchmarkController {
     private BenchmarkSettings settings;
     private final List<BenchmarkControllerListener> listeners = new ArrayList<>();
     private Thread benchmarkThread;
+    private Consumer<String> statusListener = s -> {};
 
     public void setSettings(BenchmarkSettings settings) {
         this.settings = settings;
@@ -32,6 +34,10 @@ public class BenchmarkController {
 
     void addListener(BenchmarkControllerListener listener) {
         listeners.add(listener);
+    }
+
+    void setStatusListener(Consumer<String> statusListener) {
+        this.statusListener = statusListener;
     }
 
     public void clearResults() {
@@ -82,7 +88,6 @@ public class BenchmarkController {
                         stepStats.add(x);
                     }
                 }
-
                 // averaging statistics!
                 Tuple3<Double, Double, Double> res = stepStats.parallelStream().collect(
                         Tuple.collectors(
@@ -97,8 +102,11 @@ public class BenchmarkController {
                 ));
             }
 
-            BenchmarkResults res = new BenchmarkResults(settings.getWhatToChage(),
-                    settings.getFrom(), settings.getTo(), settings.getStep(),
+            BenchmarkResults res = new BenchmarkResults(
+                    settings.getWhatToChage(),
+                    settings.getFrom(),
+                    settings.getTo(),
+                    settings.getStep(),
                     finalStats);
 
             Platform.runLater(() -> {
@@ -120,14 +128,13 @@ public class BenchmarkController {
                     settings.getBenchServerHost(),
                     settings.getBenchServerPort(),
                     settings.getServerArch(),
-                    s -> Platform.runLater(() -> listeners.forEach(l -> l.onBenchmarkError(s)))
+                    s -> Platform.runLater(() -> listeners.forEach(l -> l.onBenchmarkError(s))),
+                    s -> Platform.runLater(() -> statusListener.accept(s))
             );
 
             FinalStat oneRunRes = bc.run();
             if (oneRunRes == null) {
-                log.error("Got null stats, probably error");
-            } else {
-                log.debug("Got stats: " + oneRunRes);
+                throw new BenchmarkError("Got NULL stats! Error");
             }
             return oneRunRes;
         }
