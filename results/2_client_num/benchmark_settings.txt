@@ -1,0 +1,11 @@
+BenchmarkSettings(
+    runnerOpts=RunnerOpts(
+        clientNumber=5,
+        arrayLen=500,
+        deltaMs=5,
+        requestNumber=100
+    ),
+    benchServerHost=192.168.1.185,
+    benchServerPort=6666,
+    serverArch=TCP: Thread per client, whatToChage=Clients number, from=1, to=30, step=2, stepRepeatCnt=1
+)

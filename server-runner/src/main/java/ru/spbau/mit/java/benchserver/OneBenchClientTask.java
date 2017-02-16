@@ -23,7 +23,8 @@ import java.io.IOException;
 import java.net.Socket;
 
 /**
- * Task, which serves requests from one client
+ * Task, which serves requests from one client (benchmark client, but not
+ * client of server to benchmark, you know!)
  *
  * It servers only one request for benchmarking and returns
  */

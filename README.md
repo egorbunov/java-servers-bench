@@ -9,6 +9,18 @@
 * `server-runner` - benchmark server, which runs servers and talks to `bench` remotely
 * `test` - ...
 
+## Benchmarking servers architectures
+
+* TCP Server, which creates separate thread for serving each client
+* TCP Server, which uses Cached Thread Pool for each client connection
+* Asynchronous TCP Server
+* Single threaded TCP server
+* TCP server, which uses NIO (Selectors)
+* UDP Server, which uses separate threads for each received request processing
+* UDP Server with fixed thread pool for serving requests
+
+Each request contains array, which must be sorted on server and sent back.
+
 ## Build and run
 
 ```bash
