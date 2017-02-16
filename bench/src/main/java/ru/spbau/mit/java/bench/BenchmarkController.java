@@ -30,7 +30,7 @@ public class BenchmarkController {
         this.settings = settings;
     }
 
-    public void addListener(BenchmarkControllerListener listener) {
+    void addListener(BenchmarkControllerListener listener) {
         listeners.add(listener);
     }
 

@@ -33,7 +33,7 @@ public class ClientRunner implements Callable<Double> {
         this.opts = opts;
         this.clientCreator = clientCreator;
         this.arraySupplier = new ArraySupplier(opts.getArrayLen());
-        this.clientsExecutor = Executors.newFixedThreadPool(4);
+        this.clientsExecutor = Executors.newCachedThreadPool();
     }
 
     /**
@@ -82,7 +82,9 @@ public class ClientRunner implements Callable<Double> {
                     client.makeBlockingRequest(arraySupplier.get());
                     cnt += 1;
                     log.debug("Requests got: " + cnt);
-                    Thread.sleep(opts.getDeltaMs());
+                    if (opts.getDeltaMs() > 0) {
+                        Thread.sleep(opts.getDeltaMs());
+                    }
                 }
                 long end = System.currentTimeMillis();
                 return new ClientStat(end - start);

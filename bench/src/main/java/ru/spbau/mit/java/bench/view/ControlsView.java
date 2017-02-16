@@ -150,6 +150,7 @@ public class ControlsView implements BenchmarkControllerListener {
         interruptBench = new Button();
         interruptBench.setText("Cancel");
         interruptBench.setDisable(true);
+        interruptBench.setOnAction(e -> benchmarkController.interruptBenchmark());
 
         Button clearResults = new Button();
         clearResults.setText("Clear results tabs");
