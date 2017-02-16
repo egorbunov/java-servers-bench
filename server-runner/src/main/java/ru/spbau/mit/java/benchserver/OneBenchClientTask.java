@@ -9,6 +9,7 @@ import ru.spbau.mit.java.commons.proto.ServerStatsMsg;
 import ru.spbau.mit.java.server.BenchServer;
 import ru.spbau.mit.java.server.BenchingError;
 import ru.spbau.mit.java.server.stat.ServerStats;
+import ru.spbau.mit.java.server.tcp.async.AsyncServer;
 import ru.spbau.mit.java.server.tcp.nonblocking.NioTcpServer;
 import ru.spbau.mit.java.server.tcp.simple.SingleThreadTcpServer;
 import ru.spbau.mit.java.server.tcp.simple.ThreadPoolTcpServer;
@@ -38,35 +39,34 @@ public class OneBenchClientTask implements Runnable {
     public void run() {
         try (Socket clientSocket = sock;
              DataInputStream in = new DataInputStream(clientSocket.getInputStream());
-             DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-             BenchServer serverToBench = createServerForBenchmark(in)) {
+             DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream())) {
 
-            if (serverToBench == null) {
-                out.writeInt(BenchmarkStatusCode.BAD_ARCH);
-                return;
-            }
+            BenchServer serverToBench = createServerForBenchmark(in);
 
-            log.debug("Starting server for benchmark...");
-            serverToBench.start();
-            log.debug("Server started at port " + serverToBench.getPort());
-            out.writeInt(BenchmarkStatusCode.BENCH_READY);
-            out.writeInt(serverToBench.getPort());
-
-            int code = in.readInt();
-            if (code != BenchmarkStatusCode.STOP_BENCH) {
-                log.error("Got strange code from client, expected STOP_BENCH code");
-            }
-
-            log.debug("Stopping server for benchmark...");
-            ServerStats stats = null;
             try {
-                stats = serverToBench.stop();
-            } catch (InterruptedException e) {
-                log.error("Failed to stop server for benchmarking: " + e.getMessage());
-            } catch (BenchingError e) {
-                log.error("Failed to stop server for benchmarking: " + e.getCause());
+                if (serverToBench == null) {
+                    out.writeInt(BenchmarkStatusCode.BAD_ARCH);
+                    return;
+                }
+
+                log.debug("Starting server for benchmark...");
+                serverToBench.start();
+                log.debug("Server started at port " + serverToBench.getPort());
+                out.writeInt(BenchmarkStatusCode.BENCH_READY);
+                out.writeInt(serverToBench.getPort());
+
+                int code = in.readInt();
+                if (code != BenchmarkStatusCode.STOP_BENCH) {
+                    log.error("Got strange code from client, expected STOP_BENCH code");
+                }
+
+                log.debug("Stopping server for benchmark...");
+            } finally {
+                if (serverToBench != null) {
+                    ServerStats stats = serverToBench.stop();
+                    writeAnswerToClient(stats, out);
+                }
             }
-            writeAnswerToClient(stats, out);
 
         } catch (IOException e) {
             log.error("IO Exception: " + e);
@@ -132,6 +132,9 @@ public class OneBenchClientTask implements Runnable {
             }
             case TCP_NON_BLOCKING: {
                 return new NioTcpServer(0, Runtime.getRuntime().availableProcessors());
+            }
+            case TCP_ASYNC: {
+                return new AsyncServer(0);
             }
             default: {
                 log.info("Not supported " + opts.getServerArchitecture());

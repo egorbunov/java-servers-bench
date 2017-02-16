@@ -52,7 +52,7 @@ public class ClientRunner implements Callable<Double> {
         ArrayList<ClientStat> stats = new ArrayList<>();
         for (Future<ClientStat> f : futures) {
             try {
-                stats.add(f.get(5, TimeUnit.SECONDS));
+                stats.add(f.get(30, TimeUnit.SECONDS));
             } catch (InterruptedException e) {
                 log.error("interrupt during future.get()");
                 throw new RuntimeException("Client interrupt", e);

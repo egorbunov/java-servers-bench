@@ -35,9 +35,13 @@ public class AsyncServer implements BenchServer {
      * Creates async server, socket and binds it to given port without specifying ip address
      */
     public AsyncServer(int port) throws IOException {
-        this.port = port;
         serverChannel= AsynchronousServerSocketChannel.open();
         serverChannel.bind(new InetSocketAddress(port));
+        log.debug(serverChannel.getLocalAddress().toString());
+        InetSocketAddress address = (InetSocketAddress) serverChannel.getLocalAddress();
+        this.port = address.getPort();
+        log.debug("PORT:" + this.port);
+        log.debug(Integer.toString(port));
         results = ConcurrentHashMap.newKeySet();
         clientChannels = ConcurrentHashMap.newKeySet();
     }
@@ -99,12 +103,20 @@ public class AsyncServer implements BenchServer {
         );
     }
 
+    /**
+     * Class, which decides what to do with connections
+     */
     private class ConnectCompletor implements CompletionHandler<AsynchronousSocketChannel, Object> {
         @Override
         public void completed(AsynchronousSocketChannel result, Object attachment) {
             log.debug("Connection accepted (async)");
             clientChannels.add(result);
+
+            // subscribing accepted connection for reading
             initAsyncReading(result);
+
+            // subscribing for new connections
+            serverChannel.accept(null, this);
         }
 
         @Override
@@ -120,6 +132,7 @@ public class AsyncServer implements BenchServer {
 
     @Override
     public ServerStats stop() throws InterruptedException, IOException, BenchingError {
+        log.debug("Stopping server...");
         serverChannel.close();
         for (val ch : clientChannels) {
             ch.close();

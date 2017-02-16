@@ -110,7 +110,8 @@ public class BenchmarkClient {
         ClientCreator clientCreator = null;
         if (serverArch == ServerArch.TCP_NON_BLOCKING ||
                 serverArch == ServerArch.TCP_THREAD_POOL ||
-                serverArch == ServerArch.TCP_THREAD_PER_CLIENT) {
+                serverArch == ServerArch.TCP_THREAD_PER_CLIENT ||
+                serverArch == ServerArch.TCP_ASYNC) {
             clientCreator = new TcpConnectionPreservingClient.Creator(benchHost, benchPort);
         } else if (serverArch == ServerArch.TCP_SINGLE_THREADED) {
             clientCreator = new TcpConnectionPerRequestClient.Creator(benchHost, benchPort);
